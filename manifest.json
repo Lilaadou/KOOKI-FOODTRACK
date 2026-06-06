@@ -1,0 +1,22 @@
+{
+  "name": "Kooki Dashboard",
+  "short_name": "Kooki",
+  "description": "Traçabilité & gestion de production Kooki",
+  "start_url": "./dashboard-mockup.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d44218",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

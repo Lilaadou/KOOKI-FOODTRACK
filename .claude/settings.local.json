@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:script.google.com)",
+      "WebFetch(domain:script.googleusercontent.com)",
+      "Bash(open -a Safari \"/Users/lila/KOOKI TRACKAPP design/dashboard-mockup.html\")"
+    ]
+  }
+}
