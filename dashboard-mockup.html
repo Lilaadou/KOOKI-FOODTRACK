@@ -1977,15 +1977,7 @@ function showBonLivraison({ client, saveur, lots, boites, typeBoite='plastique',
 }
 
 // Stock local (depuis getStock) — utilisé pour afficher les lots par saveur
-let stockLocal = [
-  { code:'SUZ-260605-01', saveur:'SUZZY', big:125, small:0  },
-  { code:'SUZ-260605-03', saveur:'SUZZY', big:300, small:5  },
-  { code:'JAC-260606-01', saveur:'JACKY', big:135, small:30 },
-  { code:'BEN-260606-01', saveur:'BENNY', big:135, small:30 },
-  { code:'WOO-260605-01', saveur:'WOODY', big:135, small:0  },
-  { code:'WOO-260606-01', saveur:'WOODY', big:200, small:65 },
-  { code:'DAV-260606-01', saveur:'DAVY',  big:135, small:60 },
-];
+let stockLocal = [];
 
 async function saveSortie() {
   const type      = document.getElementById('sortie-type').value;
