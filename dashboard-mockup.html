@@ -198,8 +198,8 @@
 
     /* ── MOBILE ── */
     @media(max-width:768px){
-      html{ font-size:17px; }
-      body{ font-size:16px; }
+      html{ font-size:20px; }
+      body{ font-size:18px; }
       /* Sidebar cachée, remplacée par overlay */
       .sidebar{
         transform:translateX(-100%);
@@ -236,43 +236,51 @@
 
       /* Stat grid 2 colonnes */
       .stat-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
-      .stat-value{ font-size:26px; }
-      .stat-label{ font-size:13px; }
-      .stat-badge{ font-size:12px; }
-      .stat-card{ padding:16px 14px; }
+      .stat-value{ font-size:32px; }
+      .stat-label{ font-size:15px; }
+      .stat-badge{ font-size:13px; padding:5px 10px; }
+      .stat-card{ padding:18px 16px; }
 
       /* Titres et textes généraux */
-      .card-title{ font-size:17px; }
-      .card-sub{ font-size:13px; }
-      .topbar h1{ font-size:20px; }
-      .topbar-sub{ font-size:13px; }
+      .card-title{ font-size:20px; }
+      .card-sub{ font-size:15px; }
+      .topbar h1{ font-size:22px; }
+      .topbar-sub{ font-size:14px; }
+      .view-all{ font-size:15px; }
 
       /* Tables */
-      table{ font-size:14px; }
-      thead th{ font-size:12px; }
-      tbody td{ padding:12px 6px; }
-      .sub-text{ font-size:12px; }
-      .tag{ font-size:12px; padding:4px 9px; }
-      .status{ font-size:12px; padding:5px 10px; }
+      table{ font-size:16px; }
+      thead th{ font-size:14px; padding-bottom:14px; }
+      tbody td{ padding:14px 8px; font-size:16px; }
+      .sub-text{ font-size:14px; }
+      .tag{ font-size:14px; padding:5px 11px; }
+      .status{ font-size:14px; padding:6px 12px; }
 
       /* Navigation bas */
-      .bottom-nav-item{ font-size:11px; }
-      .bottom-nav-item .bn-icon{ font-size:22px; }
+      .bottom-nav-item{ font-size:12px; }
+      .bottom-nav-item .bn-icon{ font-size:26px; }
+      #bottom-nav{ padding:8px 0 16px; }
 
       /* Ranking */
-      .rank-name{ font-size:15px; }
-      .rank-big{ font-size:15px; }
-      .rank-small{ font-size:12px; }
+      .rank-name{ font-size:17px; }
+      .rank-big{ font-size:17px; }
+      .rank-small{ font-size:14px; }
 
       /* Formulaires */
-      .form-title{ font-size:17px; }
-      .form-group label{ font-size:12px; }
+      .form-title{ font-size:20px; }
+      .form-group label{ font-size:14px; }
+      .form-group input, .form-group select{ font-size:17px; padding:14px 12px; }
+      .btn{ font-size:16px; padding:14px 20px; }
 
       /* Login */
-      .login-name{ font-size:13px; }
-      .login-role{ font-size:11px; }
-      .login-av{ width:44px; height:44px; font-size:13px; }
-      .login-card{ padding:14px 8px; width:120px; }
+      .login-name{ font-size:15px; }
+      .login-role{ font-size:13px; }
+      .login-av{ width:52px; height:52px; font-size:16px; }
+      .login-card{ padding:16px 10px; width:130px; }
+
+      /* Sortie frigo blocs */
+      .fac-check label{ font-size:16px; }
+      .nav-item{ font-size:16px; padding:14px 24px; }
 
       /* Tables scrollables */
       .card{ padding:14px; overflow-x:auto; }
