@@ -227,7 +227,47 @@
 
     @media(max-width:768px){
       #prod-chart-row{grid-template-columns:1fr !important;}
+      #ixelles-grid{grid-template-columns:1fr !important;}
+      .cmd-saveur-row{grid-template-columns:100px 1fr 1fr;}
     }
+
+    /* ── RÉCAP BL → FACTURE ── */
+    .bl-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;flex-wrap:wrap;}
+    .bl-row:last-child{border-bottom:none;}
+    .bl-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#e0edf8;color:#0662aa;white-space:nowrap;}
+    .bl-arrow{color:#ccc;font-size:12px;}
+    .fac-linked{font-size:12px;font-weight:700;color:#27ae60;display:flex;align-items:center;gap:5px;}
+    .fac-input-wrap{display:flex;align-items:center;gap:6px;flex:1;min-width:180px;}
+    .fac-input-wrap input{flex:1;padding:5px 9px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:12px;outline:none;min-width:0;}
+    .fac-input-wrap input:focus{border-color:#d44218;}
+    .fac-input-wrap button{padding:5px 11px;background:#d44218;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .fac-input-wrap button:hover{opacity:.85;}
+    .lot-recap-card{background:#fff;border:1px solid #f0f0f0;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+    .lot-recap-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+    .lot-recap-code{font-size:13px;font-weight:700;}
+    .lot-recap-meta{font-size:11px;color:#888;}
+    .lot-recap-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;}
+    .badge-complet{background:#d4edda;color:#1a7a3a;}
+    .badge-partiel{background:#fef7d6;color:#a07800;}
+    .badge-aucun{background:#fbe8e2;color:#d44218;}
+
+    /* ── COMMANDES IXELLES ── */
+    .cmd-saveur-row{display:grid;grid-template-columns:130px 1fr 1fr;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;}
+    .cmd-saveur-row:last-child{border-bottom:none;}
+    .cmd-saveur-name{font-size:13px;font-weight:700;}
+    .cmd-saveur-stock{font-size:10px;color:#aaa;margin-top:2px;}
+    .cmd-input{padding:7px 10px;border:1.5px solid #e8e8e8;border-radius:9px;font-size:13px;text-align:center;outline:none;background:#f9f9f9;width:100%;}
+    .cmd-input:focus{border-color:#d44218;background:#fff;}
+    .cmd-pending-card{border-radius:14px;padding:16px 18px;margin-bottom:12px;border:1.5px solid #e8e8e8;background:#fff;}
+    .cmd-pending-card.ok{border-color:#27ae60;background:#f0faf4;}
+    .cmd-pending-card.partial{border-color:#e6a800;background:#fffbea;}
+    .cmd-pending-card.nok{border-color:#d44218;background:#fdf0ec;}
+    .cmd-lot-chip{display:inline-flex;align-items:center;gap:4px;background:#e0edf8;color:#0662aa;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin:2px;}
+    .cmd-lot-chip.warn{background:#fbe8e2;color:#d44218;}
+    .cmd-jour-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;}
+    .cmd-jour-badge.actif{background:#d44218;color:#fff;}
+    .cmd-jour-badge.prochain{background:#fbe8e2;color:#d44218;}
+    .cmd-jour-badge.normal{background:#f0f0f0;color:#888;}
 
     @media print{ body{ display:none; } }
 
@@ -489,6 +529,9 @@
   <button class="bottom-nav-item" onclick="showPage('premix',this);closeSidebar()">
     <span class="bn-icon">🥣</span>Premix
   </button>
+  <button class="bottom-nav-item" onclick="showPage('ixelles',this);closeSidebar()">
+    <span class="bn-icon">🏪</span>Ixelles
+  </button>
 </div>
 
 <!-- SIDEBAR -->
@@ -503,6 +546,7 @@
   <button class="nav-item" id="nav-production" onclick="showPage('production',this)"><span class="nav-icon">🏭</span> Production</button>
   <button class="nav-item" id="nav-stock" onclick="showPage('stock',this)"><span class="nav-icon">📦</span> Stock</button>
   <button class="nav-item" id="nav-frigo" onclick="showPage('frigo',this)"><span class="nav-icon">🧊</span> Frigo / Sorties</button>
+  <button class="nav-item" id="nav-ixelles" onclick="showPage('ixelles',this)"><span class="nav-icon">🏪</span> Commandes Ixelles</button>
 
   <div class="nav-label" id="nav-label-gestion" style="margin-top:12px">Gestion</div>
   <button class="nav-item" id="nav-reception" onclick="showPage('reception',this)"><span class="nav-icon">📥</span> Réception facture</button>
@@ -725,9 +769,9 @@
         <div></div>
       </div>
       <div class="form-group" style="margin-bottom:13px">
-        <label>Factures à associer * <span style="font-weight:400;color:#bbb">(cocher au moins 1)</span></label>
+        <label>Bons de livraison (BL) * <span style="font-weight:400;color:#bbb">(cocher au moins 1)</span></label>
         <div class="fac-list" id="pmx-fac-list">
-          <div class="fac-empty">Aucune facture disponible — ajoutez-en dans l'onglet Factures</div>
+          <div class="fac-empty">Aucun BL disponible — réceptionnez-en dans l'onglet Réception facture</div>
         </div>
       </div>
       <!-- Ingrédients manquants -->
@@ -805,9 +849,9 @@
         <div class="form-group"><label>Qté Small (80g)</label><input type="number" id="prod-small" placeholder="0" min="0"></div>
       </div>
       <div class="form-group" style="margin-bottom:13px">
-        <label>Factures à associer * <span style="font-weight:400;color:#bbb">(cocher au moins 1)</span></label>
+        <label>Bons de livraison (BL) * <span style="font-weight:400;color:#bbb">(cocher au moins 1)</span></label>
         <div class="fac-list" id="prod-fac-list">
-          <div class="fac-empty">Aucune facture disponible — ajoutez-en dans l'onglet Factures</div>
+          <div class="fac-empty">Aucun BL disponible — réceptionnez-en dans l'onglet Réception facture</div>
         </div>
       </div>
       <div class="form-footer">
@@ -1212,10 +1256,74 @@
     </div>
   </div>
 
+  <!-- ══════════════════ COMMANDES IXELLES ══════════════════ -->
+  <div id="page-ixelles" class="page">
+
+    <!-- Bandeau créneau -->
+    <div id="ixelles-creneau-banner" style="border-radius:14px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#f7f8fa;border:1.5px solid #e8e8e8">
+      <div>
+        <div style="font-size:14px;font-weight:700" id="ixelles-creneau-titre">Prochain créneau de commande</div>
+        <div style="font-size:12px;color:#888;margin-top:2px" id="ixelles-creneau-sub">Dimanche soir → livraison lundi · Jeudi soir → livraison vendredi</div>
+      </div>
+      <div id="ixelles-jour-badges" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start" id="ixelles-grid">
+
+      <!-- Formulaire commande en bacs -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">📋 Passer une commande</div><div class="card-sub">1 bac blanc = 40 cookies (Big + Small)</div></div>
+        </div>
+
+        <!-- En-tête colonnes -->
+        <div style="display:grid;grid-template-columns:1fr 120px 1fr;gap:10px;padding:0 0 8px;border-bottom:2px solid #f0f0f0;margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase">Saveur</div>
+          <div style="font-size:10px;font-weight:700;color:#1a7a3a;text-transform:uppercase;text-align:center">Nbre de bacs</div>
+          <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:right">Stock dispo</div>
+        </div>
+
+        <div id="ixelles-saveurs-form"></div>
+
+        <!-- Total bacs -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#f0f7f0;border-radius:10px;padding:12px 16px;margin-top:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1a7a3a">🗃️ Total bacs blancs</div>
+            <div style="font-size:11px;color:#888;margin-top:1px">1 bac = 40 cookies max</div>
+          </div>
+          <div style="font-size:28px;font-weight:700;color:#1a7a3a" id="ixelles-boites-preview">0</div>
+        </div>
+
+        <div class="form-footer" style="margin-top:14px">
+          <button class="btn btn-primary" onclick="submitCommandeIxelles()">📤 Envoyer la commande</button>
+          <button class="btn btn-secondary" onclick="resetCommandeIxelles()">↺ Vider</button>
+          <span class="toast" id="toast-ixelles"></span>
+        </div>
+      </div>
+
+      <!-- Commandes en attente -->
+      <div class="card">
+        <div class="card-header" style="margin-bottom:12px">
+          <div><div class="card-title">📬 Commandes en attente</div><div class="card-sub">À valider avant livraison</div></div>
+          <span id="ixelles-pending-badge" style="display:none;background:#d44218;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">0</span>
+        </div>
+        <div id="ixelles-pending-list">
+          <div class="empty" style="padding:16px;font-size:12px">Aucune commande en attente</div>
+        </div>
+
+        <!-- Historique -->
+        <div style="border-top:1px solid #f0f0f0;margin-top:14px;padding-top:14px">
+          <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Historique</div>
+          <div id="ixelles-history-list"><div class="empty" style="font-size:12px;padding:8px 0">Aucune commande validée</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════════ RÉCEPTION ══════════════════ -->
   <div id="page-reception" class="page">
     <div class="form-section">
-      <div class="form-title">📥 Réceptionner une facture fournisseur</div>
+      <div class="form-title">📥 Réceptionner un bon de livraison</div>
       <div class="form-grid fg-2">
         <div class="form-group">
           <label>Fournisseur *</label>
@@ -1230,9 +1338,19 @@
             <option>Autre</option>
           </select>
         </div>
-        <div class="form-group"><label>N° Facture *</label><input type="text" id="rec-numero" placeholder="Ex: FAC-2026-089"></div>
+        <div class="form-group">
+          <label>N° Bon de livraison (BL) *</label>
+          <input type="text" id="rec-numero" placeholder="Ex: HY26005663">
+        </div>
+        <div class="form-group">
+          <label>N° Facture Odoo <span style="font-weight:400;color:#bbb">(optionnel — à remplir quand reçue)</span></label>
+          <input type="text" id="rec-facture-odoo" placeholder="Ex: BILL/2026/00089">
+        </div>
+        <div class="form-group"><label>Date de réception</label><input type="date" id="rec-date"></div>
         <div class="form-group"><label>Ajouté par</label><input type="text" id="rec-nom" placeholder="Ex: Virginia"></div>
-        <div class="form-group"><label>Date de la facture</label><input type="date" id="rec-date"></div>
+      </div>
+      <div style="background:#e0edf8;border-radius:10px;padding:10px 14px;margin-bottom:13px;font-size:12px;color:#0662aa">
+        💡 <b>Si tu remplis le N° Facture Odoo ici</b>, il sera automatiquement lié à tous les Premix et Productions qui ont utilisé ce BL — sans rien faire de plus.
       </div>
       <div class="form-footer">
         <button class="btn btn-primary" onclick="saveReception()">💾 Enregistrer</button>
@@ -1241,43 +1359,57 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><div><div class="card-title">Factures reçues</div><div class="card-sub">30 derniers jours</div></div></div>
+      <div class="card-header">
+        <div><div class="card-title">Bons de livraison reçus</div><div class="card-sub">30 derniers jours</div></div>
+      </div>
       <table>
-        <thead><tr><th>Date</th><th>Fournisseur</th><th>N° Facture</th><th>Ajouté par</th></tr></thead>
-        <tbody id="rec-table"><tr><td colspan="4" class="empty">Aucune réception ce mois-ci.</td></tr></tbody>
+        <thead><tr><th>Date</th><th>Fournisseur</th><th>N° BL</th><th>Facture Odoo</th><th>Ajouté par</th></tr></thead>
+        <tbody id="rec-table"><tr><td colspan="5" class="empty">Aucune réception ce mois-ci.</td></tr></tbody>
       </table>
     </div>
   </div>
 
   <!-- ══════════════════ FACTURES ══════════════════ -->
   <div id="page-factures" class="page">
-    <div class="form-section">
-      <div class="form-title">🧾 Ajouter une facture</div>
-      <div class="form-grid fg-3">
-        <div class="form-group"><label>N° Facture *</label><input type="text" id="fac-numero" placeholder="Ex: FAC-2026-099"></div>
-        <div class="form-group">
-          <label>Fournisseur *</label>
-          <select id="fac-fournisseur">
-            <option value="">-- Sélectionner --</option>
-            <option>Agrial</option><option>Virginia</option><option>Belfarge</option>
-            <option>Cargill</option><option>Puratos</option><option>Barry Callebaut</option>
-            <option>Vandemoortele</option><option>Autre</option>
-          </select>
+
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="card-title">🧾 Récapitulatif par lot de production</div>
+          <div class="card-sub">Codes, producteurs et factures associées</div>
         </div>
-        <div class="form-group"><label>Code Production lié</label><input type="text" id="fac-code" placeholder="Ex: SUZ-260606-01"></div>
+        <button class="btn btn-secondary" onclick="buildFacturesRecap()" style="font-size:11px;padding:5px 12px">🔄 Actualiser</button>
       </div>
-      <div class="form-footer">
-        <button class="btn btn-primary" onclick="saveFacture()">💾 Ajouter la facture</button>
-        <button class="btn btn-secondary" onclick="resetFac()">↺ Réinitialiser</button>
-        <span class="toast" id="toast-fac"></span>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Code Production</th>
+              <th>Code Premix</th>
+              <th>Saveur</th>
+              <th>Producteur (production)</th>
+              <th>Producteur (premix)</th>
+              <th>N° Factures</th>
+            </tr>
+          </thead>
+          <tbody id="fac-recap-table">
+            <tr><td colspan="6" class="empty">Chargement…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="card">
-      <div class="card-header"><div><div class="card-title">Toutes les factures</div><div class="card-sub">Disponibles pour sélection dans Premix & Production</div></div></div>
-      <table>
-        <thead><tr><th>N° Facture</th><th>Fournisseur</th><th>Code Production</th><th>Ajouté le</th></tr></thead>
-        <tbody id="fac-table"><tr><td colspan="4" class="empty">Aucune facture enregistrée.</td></tr></tbody>
-      </table>
+
+    <!-- Éléments cachés conservés pour la compatibilité interne -->
+    <div style="display:none">
+      <span id="toast-fac"></span>
+      <span id="toast-corr"></span>
+      <input id="fac-numero"><input id="fac-code">
+      <select id="fac-fournisseur"></select>
+      <input id="corr-bl"><input id="corr-fac">
+      <select id="corr-fournisseur"></select>
+      <tbody id="fac-table"></tbody>
+      <tbody id="corr-table"></tbody>
+      <div id="recap-bl-container"></div>
     </div>
   </div>
 
@@ -1329,9 +1461,9 @@ const API = 'https://script.google.com/macros/s/AKfycbxFDHuFHQ7e61gnR3D0s-YjpTeB
 // ─────────────────────────────────────
 // PROFILS & ACCÈS AUX ONGLETS
 // ─────────────────────────────────────
-const ALL_PAGES   = ['dashboard','premix','production','stock','frigo','reception','factures','historique','alertes','parametres'];
-const PROD_PAGES  = ['dashboard','premix','production','stock','frigo','historique','alertes','parametres'];
-const FRIGO_PAGES = ['dashboard','frigo'];
+const ALL_PAGES   = ['dashboard','premix','production','stock','frigo','ixelles','reception','factures','historique','alertes','parametres'];
+const PROD_PAGES  = ['dashboard','premix','production','stock','frigo','ixelles','historique','alertes','parametres'];
+const FRIGO_PAGES = ['dashboard','frigo','ixelles'];
 
 const PROFILES = {
   // ── Accès complet ──
@@ -1349,7 +1481,7 @@ const PROFILES = {
   Delia:     { color:'#9b59b6', initial:'DR', role:'Équipe vente',   pages: FRIGO_PAGES },
 };
 
-const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres' };
+const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', ixelles:'Commandes Magasin Ixelles', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres' };
 
 const FULL_NAMES = {
   Lila:'Lila Doudou', Virginia:'Virginia Kunnen', Abenazer:'Abenazer Hailu',
@@ -1409,9 +1541,11 @@ function showPage(name, btn) {
   if (btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = titles[name] || name;
   if (name === 'reception') loadRecentInvoices();
+  if (name === 'factures') setTimeout(() => { loadCorrespondances(); }, 60);
   if (name === 'premix' || name === 'production') refreshFactureLists();
   if (name === 'dashboard') setTimeout(() => drawChart(currentChartMode), 60);
   if (name === 'production') setTimeout(() => { buildProdByProducer(); buildProdLegend(); drawProdChart(); initProdChartEvents(); updateLotsduJour(); updateCalendrierProduction(); }, 60);
+  if (name === 'ixelles') setTimeout(() => { initCommandeIxelles(); }, 60);
   if (name === 'premix') setTimeout(() => { updateInventairePremix(); updateManquantsSummary(); }, 60);
 }
 
@@ -1563,7 +1697,7 @@ function refreshFactureLists() {
     const el = document.getElementById(id);
     if (!el) return;
     if (!facturesRecues.length) {
-      el.innerHTML = '<div class="fac-empty">Aucune facture ce mois-ci — enregistrez-en dans l\'onglet Réception facture</div>';
+      el.innerHTML = '<div class="fac-empty">Aucun BL ce mois-ci — réceptionnez-en dans l\'onglet Réception facture</div>';
       return;
     }
     el.innerHTML = facturesRecues.map(f => `
@@ -1886,10 +2020,8 @@ function updateDashboardStockTable() {
 
   updateDashboardClassement();
   updateChartWithStock();
-  // Recalculer le calendrier de production si la page Production est visible
-  if (document.getElementById('page-production')?.classList.contains('active')) {
-    updateCalendrierProduction();
-  }
+  if (document.getElementById('page-production')?.classList.contains('active')) updateCalendrierProduction();
+  if (document.getElementById('page-ixelles')?.classList.contains('active')) { buildIxellesForm(); loadCommandesIxelles(); }
 }
 
 function calcBoites() {
@@ -2372,6 +2504,221 @@ function resetSortie() {
 }
 
 // ─────────────────────────────────────
+// COMMANDES MAGASIN IXELLES
+// ─────────────────────────────────────
+const ALL_SAVEURS_CMD = ['SUZZY','JACKY','BENNY','DAVY','MOLLY','WALLY','CHARLY','LENI','EMMY','WOODY','DANNY'];
+const COOKIES_PAR_BAC = 40;
+
+function initCommandeIxelles() {
+  updateIxellesJourBadges();
+  buildIxellesForm();
+  loadCommandesIxelles();
+}
+
+function updateIxellesJourBadges() {
+  const badgeEl = document.getElementById('ixelles-jour-badges');
+  const titreEl = document.getElementById('ixelles-creneau-titre');
+  const banner  = document.getElementById('ixelles-creneau-banner');
+  if (!badgeEl) return;
+  const now = new Date(), jour = now.getDay(), heure = now.getHours();
+  const JOURS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const creneaux = [
+    { jourCmd: 0, livraison: 'Lundi',    heureMin: 18 },
+    { jourCmd: 4, livraison: 'Vendredi', heureMin: 18 },
+  ];
+  const estActif = creneaux.some(c => c.jourCmd === jour && heure >= c.heureMin);
+  badgeEl.innerHTML = creneaux.map(c => {
+    const isAujourd = c.jourCmd === jour;
+    const ouvert    = isAujourd && heure >= c.heureMin;
+    const cls = ouvert ? 'actif' : isAujourd ? 'prochain' : 'normal';
+    return `<span class="cmd-jour-badge ${cls}">${ouvert ? '🟢' : '📅'} ${JOURS[c.jourCmd]} soir → livraison ${c.livraison}</span>`;
+  }).join('');
+  if (estActif) {
+    if (titreEl) titreEl.textContent = '🟢 Créneau de commande ouvert ce soir !';
+    if (banner) { banner.style.background = '#f0faf4'; banner.style.borderColor = '#27ae60'; }
+  }
+}
+
+function buildIxellesForm() {
+  const container = document.getElementById('ixelles-saveurs-form');
+  if (!container) return;
+  container.innerHTML = ALL_SAVEURS_CMD.map(sav => {
+    const total = stockLocal.filter(l => l.saveur === sav).reduce((s, l) => s + l.big + l.small, 0);
+    const bacs  = Math.floor(total / COOKIES_PAR_BAC);
+    const isBlue = sav === 'WOODY';
+    const ok = bacs > 0;
+    return `<div class="cmd-saveur-row" style="grid-template-columns:1fr 120px 1fr">
+      <span class="tag ${isBlue ? 'tag-b' : 'tag-o'}" style="font-size:12px">${sav}</span>
+      <input type="number" min="0" max="${bacs}" class="cmd-input" id="cmd-bacs-${sav}" placeholder="0"
+        ${!ok ? 'disabled style="opacity:.4"' : ''} oninput="updateIxellesBoitesPreview()">
+      <div style="text-align:right">
+        <span style="font-size:12px;font-weight:700;color:${ok ? '#27ae60' : '#d44218'}">${bacs} bac${bacs !== 1 ? 's' : ''}</span>
+        <div style="font-size:10px;color:#aaa">${total} cookies</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateIxellesBoitesPreview() {
+  let total = 0;
+  ALL_SAVEURS_CMD.forEach(sav => { total += parseInt(document.getElementById('cmd-bacs-' + sav)?.value) || 0; });
+  const el = document.getElementById('ixelles-boites-preview');
+  if (el) el.textContent = total;
+}
+
+function getStockBySaveur(saveur) {
+  return stockLocal.filter(l => l.saveur === saveur && (l.big > 0 || l.small > 0))
+    .sort((a, b) => a.code.localeCompare(b.code));
+}
+
+function calculerFIFO_bacs(saveur, nbBacs) {
+  const lots = getStockBySaveur(saveur);
+  const plan = [];
+  let rest = nbBacs * COOKIES_PAR_BAC;
+  for (const lot of lots) {
+    if (rest <= 0) break;
+    const dispo = lot.big + lot.small;
+    if (!dispo) continue;
+    const take     = Math.min(rest, dispo);
+    const takeBig  = Math.min(take, lot.big);
+    const takeSm   = Math.min(take - takeBig, lot.small);
+    plan.push({ code: lot.code, big: takeBig, small: takeSm, total: takeBig + takeSm });
+    rest -= takeBig + takeSm;
+  }
+  const totalDispo = lots.reduce((s, l) => s + l.big + l.small, 0);
+  return {
+    plan,
+    suffisant: totalDispo >= nbBacs * COOKIES_PAR_BAC,
+    bacsDispos: Math.floor(totalDispo / COOKIES_PAR_BAC),
+    manqueCookies: Math.max(0, nbBacs * COOKIES_PAR_BAC - totalDispo),
+  };
+}
+
+function submitCommandeIxelles() {
+  const lignes = [];
+  ALL_SAVEURS_CMD.forEach(sav => {
+    const bacs = parseInt(document.getElementById('cmd-bacs-' + sav)?.value) || 0;
+    if (bacs > 0) lignes.push({ saveur: sav, bacs });
+  });
+  if (!lignes.length) { toast('ixelles', '⚠️ Entrez au moins 1 bac', 'err'); return; }
+  const totalBacs = lignes.reduce((s, l) => s + l.bacs, 0);
+  const commande = { id: Date.now(), date: new Date().toISOString(), par: FULL_NAMES[currentProfile] || currentProfile, lignes, totalBacs, statut: 'en_attente' };
+  const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  stored.unshift(commande);
+  localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored));
+  toast('ixelles', '✓ Commande de ' + totalBacs + ' bac' + (totalBacs > 1 ? 's' : '') + ' envoyée !', 'ok');
+  resetCommandeIxelles();
+  loadCommandesIxelles();
+}
+
+function resetCommandeIxelles() {
+  ALL_SAVEURS_CMD.forEach(sav => { const el = document.getElementById('cmd-bacs-' + sav); if (el) el.value = ''; });
+  const el = document.getElementById('ixelles-boites-preview'); if (el) el.textContent = '0';
+}
+
+function cmdCardHTML(cmd) {
+  const d = new Date(cmd.date).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+  let globalOk = true, globalPartial = false;
+  const lignesHTML = cmd.lignes.map(l => {
+    const fifo = calculerFIFO_bacs(l.saveur, l.bacs);
+    if (!fifo.suffisant) { globalOk = false; if (fifo.plan.length) globalPartial = true; }
+    const isBlue = l.saveur === 'WOODY';
+    const icon   = fifo.suffisant ? '✅' : fifo.plan.length ? '⚡' : '❌';
+    const chips  = fifo.plan.map(p => `<span class="cmd-lot-chip">${p.code} (${p.total} 🍪)</span>`).join('');
+    const manque = !fifo.suffisant ? `<span style="font-size:11px;color:#d44218;font-weight:600">· manque ${fifo.manqueCookies} cookies</span>` : '';
+    return `<div style="padding:6px 0;border-bottom:1px solid #f5f5f5">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+        <span>${icon}</span>
+        <span class="tag ${isBlue ? 'tag-b' : 'tag-o'}" style="font-size:11px">${l.saveur}</span>
+        <span style="font-size:13px;font-weight:700;color:#1a7a3a">${l.bacs} bac${l.bacs > 1 ? 's' : ''}</span>
+        <span style="font-size:11px;color:#888">= ${l.bacs * COOKIES_PAR_BAC} cookies max</span>
+        ${manque}
+      </div>
+      <div>${chips || '<span style="font-size:11px;color:#ccc">Aucun lot disponible</span>'}</div>
+    </div>`;
+  }).join('');
+  const totalBacs = cmd.totalBacs || cmd.lignes.reduce((s, l) => s + l.bacs, 0);
+  const cardClass = globalOk ? 'ok' : globalPartial ? 'partial' : 'nok';
+  const cardLabel = globalOk ? '✅ Faisable' : globalPartial ? '⚡ Partiel' : '❌ Impossible';
+  return `<div class="cmd-pending-card ${cardClass}" style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div>
+        <div style="font-size:13px;font-weight:700">📋 ${totalBacs} bac${totalBacs > 1 ? 's' : ''} commandé${totalBacs > 1 ? 's' : ''}</div>
+        <div style="font-size:11px;color:#888">${d} · par ${cmd.par}</div>
+      </div>
+      <span class="lot-recap-badge ${cardClass === 'ok' ? 'badge-complet' : cardClass === 'partial' ? 'badge-partiel' : 'badge-aucun'}">${cardLabel}</span>
+    </div>
+    ${lignesHTML}
+    <div style="margin-top:10px;background:#f0f7f0;border-radius:9px;padding:9px 13px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#1a7a3a;font-weight:600">🗃️ Total bacs à préparer</span>
+      <span style="font-size:20px;font-weight:700;color:#1a7a3a">${totalBacs} bac${totalBacs > 1 ? 's' : ''}</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      ${globalOk || globalPartial ? `<button onclick="validerCommandeIxelles(${cmd.id})" style="flex:1;padding:9px;background:#27ae60;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🚀 Valider et préparer la sortie</button>` : ''}
+      <button onclick="annulerCommandeIxelles(${cmd.id})" style="padding:9px 14px;background:#f0f0f0;color:#888;border:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">✕</button>
+    </div>
+  </div>`;
+}
+
+function loadCommandesIxelles() {
+  const stored  = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  const pending = stored.filter(c => c.statut === 'en_attente');
+  const history = stored.filter(c => c.statut !== 'en_attente').slice(0, 5);
+  const listEl  = document.getElementById('ixelles-pending-list');
+  const badge   = document.getElementById('ixelles-pending-badge');
+  const histEl  = document.getElementById('ixelles-history-list');
+  if (badge) { badge.style.display = pending.length ? '' : 'none'; badge.textContent = pending.length; }
+  if (listEl) listEl.innerHTML = pending.length ? pending.map(cmdCardHTML).join('') : '<div class="empty" style="padding:16px;font-size:12px">Aucune commande en attente</div>';
+  if (histEl) histEl.innerHTML = !history.length ? '<div class="empty" style="font-size:12px;padding:8px 0">Aucune commande validée</div>'
+    : history.map(cmd => {
+        const d = new Date(cmd.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const icon = cmd.statut === 'valide' ? '✅' : '✕';
+        const t = cmd.totalBacs || 0;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:12px"><span>${icon} ${d} · ${cmd.par}</span><span style="font-weight:700;color:#1a7a3a">${t} bac${t > 1 ? 's' : ''}</span></div>`;
+      }).join('');
+}
+
+function validerCommandeIxelles(id) {
+  const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  const cmd    = stored.find(c => c.id === id);
+  if (!cmd) return;
+  showPage('frigo', document.getElementById('nav-frigo'));
+  document.getElementById('sortie-type').value = 'magasin';
+  toggleDestination();
+  saveurBlockCount = 0;
+  document.getElementById('saveurs-blocks').innerHTML = '';
+  cmd.lignes.forEach(l => {
+    const fifo = calculerFIFO_bacs(l.saveur, l.bacs);
+    if (!fifo.plan.length) return;
+    addSaveurBlock();
+    const bid = saveurBlockCount;
+    const sel = document.getElementById('saveur-sel-' + bid);
+    if (sel) { sel.value = l.saveur; loadLotsBlock(bid); }
+    setTimeout(() => {
+      fifo.plan.forEach(p => {
+        const bigEl = document.getElementById('b' + bid + '-big-' + p.code);
+        const smEl  = document.getElementById('b' + bid + '-small-' + p.code);
+        if (bigEl) bigEl.value = p.big;
+        if (smEl)  smEl.value  = p.small;
+      });
+      calcBoites();
+    }, 150);
+  });
+  cmd.statut = 'valide';
+  localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored));
+  loadCommandesIxelles();
+}
+
+function annulerCommandeIxelles(id) {
+  if (!confirm('Annuler cette commande ?')) return;
+  const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  const idx    = stored.findIndex(c => c.id === id);
+  if (idx !== -1) { stored[idx].statut = 'annule'; localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored)); }
+  loadCommandesIxelles();
+}
+
+
+// ─────────────────────────────────────
 // LOTS DU JOUR
 // ─────────────────────────────────────
 function updateLotsduJour() {
@@ -2694,7 +3041,12 @@ function resetPmx() {
   if (autre) autre.value = '';
 }
 function resetProd() { ['prod-pmx','prod-code','prod-big','prod-small'].forEach(id=>document.getElementById(id).value=''); document.getElementById('prod-saveur').selectedIndex=0; document.querySelectorAll('#prod-fac-list input').forEach(c=>c.checked=false); }
-function resetRec() { ['rec-numero','rec-nom','rec-date'].forEach(id=>document.getElementById(id).value=''); document.getElementById('rec-fournisseur').selectedIndex=0; }
+function resetRec() {
+  ['rec-numero','rec-nom','rec-date','rec-facture-odoo'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('rec-fournisseur').selectedIndex = 0;
+}
 function resetFac() { ['fac-numero','fac-code'].forEach(id=>document.getElementById(id).value=''); document.getElementById('fac-fournisseur').selectedIndex=0; }
 
 function savePremix() {
@@ -2704,15 +3056,15 @@ function savePremix() {
   if (!code||!nom)      { toast('pmx','⚠️ Code et producteur requis','err'); return; }
   if (!saveur)          { toast('pmx','⚠️ Choisissez une saveur','err');      return; }
   if (!sac)             { toast('pmx','⚠️ Choisissez un numéro de sac','err'); return; }
-  const factures = getCheckedFactures('pmx-fac-list');
-  if (!factures.length) { toast('pmx','⚠️ Cochez au moins 1 facture','err'); return; }
+  const bls = getCheckedFactures('pmx-fac-list');
+  if (!bls.length) { toast('pmx','⚠️ Cochez au moins 1 BL','err'); return; }
 
   const manquants = document.getElementById('pmx-manquants-toggle').checked ? getManquantsFromForm() : [];
 
   // Sauvegarder dans localStorage
   const stored = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
   if (stored.find(r => r.codePremix === code)) { toast('pmx','⚠️ Ce code existe déjà','err'); return; }
-  stored.unshift({ codePremix: code, nom, saveur, sac, factures, manquants, date: new Date().toISOString() });
+  stored.unshift({ codePremix: code, nom, saveur, sac, bls, factures: bls, manquants, date: new Date().toISOString() });
   localStorage.setItem('kooki_premix', JSON.stringify(stored));
 
   // Marquer le sac comme disponible dans l'inventaire étagère
@@ -2733,7 +3085,7 @@ function savePremix() {
         nom,
         saveur,
         sac,
-        factures,
+        factures: bls,
         manquants,
         date: new Date().toISOString()
       })
@@ -2760,7 +3112,7 @@ function savePremix() {
   tr.innerHTML = `<td><b>${code}</b>${hasMq ? ' <span class="tag" style="background:#fbe8e2;color:#d44218">⚠️ manquants</span>' : ''}</td>
     <td><b>${saveur}</b> · Sac ${sac}</td>
     <td>${nom}</td>
-    <td>${factures.map(f=>`<span class="tag tag-o">${f}</span>`).join(' ')}</td>
+    <td>${bls.map(f=>`<span class="tag tag-o">${f}</span>`).join(' ')}</td>
     <td><span class="status ${hasMq?'s-warn':'s-ok'}">${hasMq?'Incomplet':'Disponible'}</span></td>
     <td><button onclick="deletePremix('${code}')"
       style="background:none;border:none;cursor:pointer;font-size:15px;color:#ccc;padding:2px 6px;border-radius:6px;transition:color .15s,background .15s"
@@ -2842,7 +3194,7 @@ async function saveProduction() {
   const big=parseInt(val('prod-big'))||0, small=parseInt(val('prod-small'))||0;
   if (!nom||!pmx||!code||!saveur) { toast('prod','⚠️ Tous les champs * sont requis','err'); return; }
   const factures = getCheckedFactures('prod-fac-list');
-  if (!factures.length) { toast('prod','⚠️ Cochez au moins 1 facture','err'); return; }
+  if (!factures.length) { toast('prod','⚠️ Cochez au moins 1 BL','err'); return; }
   try {
     const res = await fetch(API, { method:'POST', body: JSON.stringify({ action:'production', nom, pmx, code, saveur, big, small, factures }) });
     const json = await res.json();
@@ -2860,7 +3212,7 @@ async function saveProduction() {
 
       // Sauvegarder dans localStorage
       const storedProd = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
-      storedProd.unshift({ code, saveur, big, small, pmx, nom, date: new Date().toISOString() });
+      storedProd.unshift({ code, saveur, big, small, pmx, nom, bls: factures, date: new Date().toISOString() });
       localStorage.setItem('kooki_productions', JSON.stringify(storedProd));
 
       // 2. Ajouter dans le tableau historique production
@@ -2891,26 +3243,352 @@ async function saveProduction() {
 }
 
 async function saveReception() {
-  const fournisseur = val('rec-fournisseur')||document.getElementById('rec-fournisseur').options[document.getElementById('rec-fournisseur').selectedIndex]?.text;
-  const numero = val('rec-numero'), nom = val('rec-nom'), date = val('rec-date');
-  if (!fournisseur||fournisseur==='-- Sélectionner --'||!numero) { toast('rec','⚠️ Fournisseur et N° requis','err'); return; }
+  const fournisseur = val('rec-fournisseur') || document.getElementById('rec-fournisseur').options[document.getElementById('rec-fournisseur').selectedIndex]?.text;
+  const numero     = val('rec-numero');
+  const nom        = val('rec-nom');
+  const date       = val('rec-date');
+  const factureOdoo = val('rec-facture-odoo'); // nouveau champ optionnel
+
+  if (!fournisseur || fournisseur === '-- Sélectionner --' || !numero) {
+    toast('rec', '⚠️ Fournisseur et N° BL requis', 'err'); return;
+  }
+
+  // Sauvegarder en local immédiatement (même si API échoue)
+  addFactureRecue(numero, fournisseur, new Date().toISOString());
+
+  // Si une facture Odoo est fournie → sauvegarder la correspondance UNE SEULE FOIS
+  if (factureOdoo) {
+    await saveCorrespondance(numero, factureOdoo, fournisseur, true);
+  }
+
+  // Envoi API Réception
   try {
-    const res = await fetch(API, { method:'POST', body: JSON.stringify({ action:'reception', fournisseur, numero, nom, date }) });
+    const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'reception', fournisseur, numero, nom, date, factureOdoo }) });
     const json = await res.json();
     if (json.success) {
-      toast('rec','✓ Facture réceptionnée !','ok');
-      const today = new Date().toLocaleDateString('fr-FR');
-      // Ajouter aux factures disponibles pour Premix/Production
-      addFactureRecue(numero, fournisseur, new Date().toISOString());
-      // Ajouter dans le tableau Réception
-      const tbody = document.getElementById('rec-table');
-      if (tbody.querySelector('.empty')) tbody.innerHTML='';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${today}</td><td><b>${fournisseur}</b></td><td><span class="tag tag-o">${numero}</span></td><td>${nom||'—'}</td>`;
-      tbody.prepend(tr);
-      resetRec();
-    } else toast('rec','❌ '+(json.error||'Erreur'),'err');
-  } catch { toast('rec','❌ Connexion échouée','err'); }
+      toast('rec', factureOdoo ? '✓ BL réceptionné + facture liée automatiquement !' : '✓ BL réceptionné !', 'ok');
+    } else {
+      toast('rec', '✓ BL enregistré en local (Google Sheets : ' + (json?.error || 'non disponible') + ')', 'ok');
+    }
+  } catch {
+    toast('rec', '✓ BL enregistré en local (hors ligne)', 'ok');
+  }
+
+  // Ajouter la ligne dans le tableau
+  const today = new Date().toLocaleDateString('fr-FR');
+  const tbody = document.getElementById('rec-table');
+  if (tbody.querySelector('.empty')) tbody.innerHTML = '';
+
+  // Colonne Facture Odoo : affichée si liée, sinon bouton pour lier plus tard
+  const safeNum = numero.replace(/'/g, "\\'");
+  const facCell = factureOdoo
+    ? `<span style="color:#27ae60;font-weight:700">✓ ${factureOdoo}</span>`
+    : `<span style="display:flex;align-items:center;gap:6px">
+        <input type="text" id="odoo_${safeNum}" placeholder="BILL/2026/…"
+          style="padding:4px 8px;border:1.5px solid #e8e8e8;border-radius:7px;font-size:12px;outline:none;width:150px"
+          onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'">
+        <button onclick="lierFactureDepuisReception('${safeNum}','${fournisseur.replace(/'/g,"\\'")}')"
+          style="padding:4px 10px;background:#d44218;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">
+          Lier
+        </button>
+       </span>`;
+
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-bl', numero);
+  tr.innerHTML = `<td class="sub-text">${today}</td>
+    <td><b>${fournisseur}</b></td>
+    <td><span class="bl-tag">${numero}</span></td>
+    <td id="fac-cell-${numero.replace(/[^a-zA-Z0-9]/g,'_')}">${facCell}</td>
+    <td>${nom || '—'}</td>`;
+  tbody.prepend(tr);
+
+  resetRec();
+}
+
+function lierFactureDepuisReception(bl, fournisseur) {
+  const safeId = bl.replace(/[^a-zA-Z0-9]/g, '_');
+  const input  = document.getElementById('odoo_' + bl.replace(/'/g, ''));
+  if (!input || !input.value.trim()) {
+    if (input) { input.style.borderColor = '#d44218'; setTimeout(() => input.style.borderColor = '#e8e8e8', 2000); }
+    return;
+  }
+  const facVal = input.value.trim();
+  // Sauvegarder la correspondance — propagation automatique à tous les Premix/Productions
+  saveCorrespondance(bl, facVal, fournisseur, true);
+  // Mettre à jour la cellule
+  const cell = document.getElementById('fac-cell-' + safeId);
+  if (cell) cell.innerHTML = `<span style="color:#27ae60;font-weight:700">✓ ${facVal}</span>`;
+}
+
+// ─────────────────────────────────────
+// CORRESPONDANCES BL → FACTURE ODOO
+// ─────────────────────────────────────
+
+// Stockage local des correspondances
+let correspondances = JSON.parse(localStorage.getItem('kooki_correspondances') || '[]');
+// Format : [{ bl, facture, fournisseur, date }]
+
+function saveCorrespondancesLocal() {
+  localStorage.setItem('kooki_correspondances', JSON.stringify(correspondances));
+}
+
+function getFacturePourBL(bl) {
+  const c = correspondances.find(c => c.bl === bl);
+  return c ? c : null;
+}
+
+async function saveCorrespondance(bl, fac, fournisseur, fromInline) {
+  // Peut être appelé depuis le formulaire ou inline dans le récap
+  const blVal  = bl  || (document.getElementById('corr-bl')?.value  || '').trim();
+  const facVal = fac || (document.getElementById('corr-fac')?.value  || '').trim();
+  const fourn  = fournisseur || document.getElementById('corr-fournisseur')?.value || '';
+  const toastId = fromInline ? null : 'corr';
+
+  if (!blVal || !facVal) {
+    if (toastId) toast(toastId, '⚠️ N° BL et N° Facture requis', 'err');
+    return;
+  }
+
+  // Éviter les doublons
+  const existing = correspondances.find(c => c.bl === blVal);
+  if (existing) {
+    existing.facture = facVal;
+    existing.fournisseur = fourn || existing.fournisseur;
+    existing.date = new Date().toISOString();
+  } else {
+    correspondances.unshift({ bl: blVal, facture: facVal, fournisseur: fourn, date: new Date().toISOString() });
+  }
+  saveCorrespondancesLocal();
+
+  // Envoi API
+  try {
+    fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'correspondance', bl: blVal, facture: facVal, fournisseur: fourn })
+    })
+    .then(r => r.json())
+    .then(json => {
+      if (json?.success && toastId) toast(toastId, '✓ Lien BL → Facture enregistré + Google Sheets', 'ok');
+    })
+    .catch(() => {});
+  } catch {}
+
+  if (toastId) toast(toastId, '✓ Lien enregistré !', 'ok');
+
+  refreshCorrTable();
+  buildRecapBL();
+  if (!fromInline) resetCorr();
+}
+
+function resetCorr() {
+  const bl = document.getElementById('corr-bl');   if (bl) bl.value = '';
+  const fc = document.getElementById('corr-fac');  if (fc) fc.value = '';
+  const fo = document.getElementById('corr-fournisseur'); if (fo) fo.selectedIndex = 0;
+}
+
+function refreshCorrTable() {
+  const tbody = document.getElementById('corr-table');
+  if (!tbody) return;
+  if (!correspondances.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Aucune correspondance enregistrée.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = correspondances.map(c => {
+    const d = c.date ? new Date(c.date).toLocaleDateString('fr-FR') : '—';
+    return `<tr>
+      <td><span class="bl-tag">${c.bl}</span></td>
+      <td><b style="color:#27ae60">${c.facture}</b></td>
+      <td>${c.fournisseur || '—'}</td>
+      <td class="sub-text">${d}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildFacturesRecap() {
+  const tbody = document.getElementById('fac-recap-table');
+  if (!tbody) return;
+
+  const prods   = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix')      || '[]');
+
+  if (!prods.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucune production enregistrée.</td></tr>';
+    return;
+  }
+
+  // Index des premix par code pour accès rapide
+  const pmxIndex = {};
+  premixs.forEach(p => { pmxIndex[p.codePremix] = p; });
+
+  tbody.innerHTML = prods.map(prod => {
+    const pmxEntry = pmxIndex[prod.pmx] || null;
+
+    // Collecter tous les BLs : production + premix associé
+    const blsProd = prod.bls || prod.factures || [];
+    const blsPmx  = pmxEntry ? (pmxEntry.bls || pmxEntry.factures || []) : [];
+
+    // Fusionner sans doublons
+    const allBLs = [...new Set([...blsProd, ...blsPmx])];
+
+    // Résoudre chaque BL en numéro de facture Odoo
+    const factures = allBLs.map(bl => {
+      const c = getFacturePourBL(bl);
+      return c
+        ? `<span style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+             <span class="bl-tag" style="font-size:10px">${bl}</span>
+             <span style="color:#ccc">→</span>
+             <span style="color:#27ae60;font-weight:700;font-size:12px">${c.facture}</span>
+           </span>`
+        : `<span style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+             <span class="bl-tag" style="font-size:10px">${bl}</span>
+             <span style="color:#ccc">→</span>
+             <span style="color:#d44218;font-size:11px;font-weight:600">Non lié</span>
+           </span>`;
+    }).join('') || '<span style="color:#ccc;font-size:12px">—</span>';
+
+    const isBlue  = prod.saveur === 'WOODY';
+    const date    = prod.date ? new Date(prod.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' }) : '';
+
+    return `<tr>
+      <td>
+        <b>${prod.code}</b>
+        ${date ? `<div class="sub-text">${date}</div>` : ''}
+      </td>
+      <td>${prod.pmx || '—'}</td>
+      <td><span class="tag ${isBlue?'tag-b':'tag-o'}">${prod.saveur}</span></td>
+      <td>${prod.nom || '—'}</td>
+      <td>${pmxEntry ? (pmxEntry.nom || '—') : '<span style="color:#ccc">—</span>'}</td>
+      <td style="min-width:220px">${factures}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadCorrespondances() {
+  try {
+    const data = await fetchAPI('getCorrespondances');
+    if (Array.isArray(data) && data.length) {
+      data.forEach(r => {
+        if (!correspondances.find(c => c.bl === r.bl)) {
+          correspondances.push({ bl: r.bl, facture: r.facture, fournisseur: r.fournisseur || '', date: r.date || '' });
+        }
+      });
+      saveCorrespondancesLocal();
+    }
+  } catch {}
+  buildFacturesRecap();
+}
+
+function buildRecapBL() {
+  const container = document.getElementById('recap-bl-container');
+  if (!container) return;
+
+  const prods   = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix')      || '[]');
+
+  // Construire une liste unifiée : { ref, type, label, meta, bls }
+  const entries = [];
+
+  premixs.forEach(p => {
+    const bls = p.bls || p.factures || [];
+    if (!bls.length) return;
+    entries.push({
+      ref:   p.codePremix,
+      type:  'premix',
+      label: p.codePremix,
+      meta:  `${p.saveur||''}${p.sac?' · Sac '+p.sac:''} · ${p.nom||'—'} · ${p.date ? new Date(p.date).toLocaleDateString('fr-FR') : ''}`,
+      bls,
+    });
+  });
+
+  prods.forEach(p => {
+    const bls = p.bls || p.factures || [];
+    if (!bls.length) return;
+    entries.push({
+      ref:   p.code,
+      type:  'production',
+      label: p.code,
+      tag:   p.saveur,
+      meta:  `Premix : ${p.pmx||'—'} · ${p.nom||'—'} · ${p.date ? new Date(p.date).toLocaleDateString('fr-FR') : ''}`,
+      bls,
+    });
+  });
+
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty" style="padding:20px">Aucun BL enregistré. Les BLs apparaissent ici après avoir saisi des Premix ou Productions.</div>';
+    return;
+  }
+
+  const fourn_opts = ['Foodflow','Bruyerre','Colruyt','Hygiena','Makady','De Notten Shop','Autre']
+    .map(f => `<option>${f}</option>`).join('');
+
+  const blRowHTML = (bl) => {
+    const corresp = getFacturePourBL(bl);
+    const safebl  = bl.replace(/'/g, "\\'");
+    if (corresp) {
+      return `<div class="bl-row">
+        <span class="bl-tag">📄 ${bl}</span>
+        <span class="bl-arrow">→</span>
+        <span class="fac-linked">✓ ${corresp.facture}${corresp.fournisseur ? ' <span style="font-weight:400;color:#888;font-size:11px">· '+corresp.fournisseur+'</span>' : ''}</span>
+        <button onclick="deleteCorrespondance('${safebl}')" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px" onmouseover="this.style.color='#d44218'" onmouseout="this.style.color='#ccc'" title="Supprimer ce lien">🗑️</button>
+      </div>`;
+    }
+    const uid = 'bl_' + bl.replace(/[^a-zA-Z0-9]/g, '_');
+    return `<div class="bl-row">
+      <span class="bl-tag">📄 ${bl}</span>
+      <span class="bl-arrow">→</span>
+      <div class="fac-input-wrap">
+        <input type="text" id="${uid}_fac" placeholder="N° Facture Odoo" onkeydown="if(event.key==='Enter') lierBLdepuisRecap('${safebl}','${uid}')">
+        <select id="${uid}_four" style="padding:5px 8px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:12px;outline:none;max-width:140px">
+          <option value="">Fournisseur</option>${fourn_opts}
+        </select>
+        <button onclick="lierBLdepuisRecap('${safebl}','${uid}')">Lier</button>
+      </div>
+    </div>`;
+  };
+
+  let html = '';
+  entries.forEach(e => {
+    const linked   = e.bls.filter(bl => getFacturePourBL(bl));
+    const unlinked = e.bls.filter(bl => !getFacturePourBL(bl));
+    const statusClass = unlinked.length === 0 ? 'badge-complet' : linked.length === 0 ? 'badge-aucun' : 'badge-partiel';
+    const statusLabel = unlinked.length === 0 ? '✓ Complet' : linked.length === 0 ? '⚠️ Non lié' : '⚡ Partiel';
+    const typeIcon = e.type === 'premix' ? '🥣 Premix' : '🏭 Production';
+    const tagHtml  = e.tag ? `<span class="tag ${e.tag==='WOODY'?'tag-b':'tag-o'}" style="margin-left:6px">${e.tag}</span>` : '';
+
+    html += `<div class="lot-recap-card">
+      <div class="lot-recap-header">
+        <div>
+          <div class="lot-recap-code">
+            <span style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-right:6px">${typeIcon}</span>
+            ${e.label}${tagHtml}
+          </div>
+          <div class="lot-recap-meta">${e.meta}</div>
+        </div>
+        <span class="lot-recap-badge ${statusClass}">${statusLabel} (${linked.length}/${e.bls.length})</span>
+      </div>
+      <div>${e.bls.map(blRowHTML).join('')}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function lierBLdepuisRecap(bl, uid) {
+  const facEl  = document.getElementById(uid + '_fac');
+  const fourEl = document.getElementById(uid + '_four');
+  if (!facEl?.value.trim()) {
+    facEl.style.borderColor = '#d44218';
+    setTimeout(() => { if (facEl) facEl.style.borderColor = '#e8e8e8'; }, 2000);
+    return;
+  }
+  saveCorrespondance(bl, facEl.value.trim(), fourEl?.value || '', true);
+}
+
+function deleteCorrespondance(bl) {
+  correspondances = correspondances.filter(c => c.bl !== bl);
+  saveCorrespondancesLocal();
+  refreshCorrTable();
+  buildRecapBL();
 }
 
 function saveFacture() {
@@ -2933,9 +3611,32 @@ async function loadRecentInvoices() {
     tbody.innerHTML = '';
     data.forEach(r => {
       const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
-      tbody.innerHTML += `<tr><td>${d}</td><td><b>${r.fournisseur||'—'}</b></td><td><span class="tag tag-o">${r.numero}</span></td><td>${r.nom||'—'}</td></tr>`;
-      // Alimenter les checkboxes Premix/Production depuis la Réception
       addFactureRecue(r.numero, r.fournisseur||'—', r.date);
+
+      // Vérifier si ce BL est déjà lié à une facture Odoo
+      const corresp = getFacturePourBL(r.numero);
+      const safeNum = (r.numero||'').replace(/[^a-zA-Z0-9]/g, '_');
+      const safeBl  = (r.numero||'').replace(/'/g, "\\'");
+      const safeFo  = (r.fournisseur||'').replace(/'/g, "\\'");
+      const facCell = corresp
+        ? `<span style="color:#27ae60;font-weight:700">✓ ${corresp.facture}</span>`
+        : `<span style="display:flex;align-items:center;gap:6px">
+            <input type="text" id="odoo_${safeNum}" placeholder="BILL/2026/…"
+              style="padding:4px 8px;border:1.5px solid #e8e8e8;border-radius:7px;font-size:12px;outline:none;width:150px"
+              onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'">
+            <button onclick="lierFactureDepuisReception('${safeBl}','${safeFo}')"
+              style="padding:4px 10px;background:#d44218;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">
+              Lier
+            </button>
+           </span>`;
+
+      tbody.innerHTML += `<tr data-bl="${r.numero}">
+        <td class="sub-text">${d}</td>
+        <td><b>${r.fournisseur||'—'}</b></td>
+        <td><span class="bl-tag">${r.numero}</span></td>
+        <td id="fac-cell-${safeNum}">${facCell}</td>
+        <td>${r.nom||'—'}</td>
+      </tr>`;
     });
   } catch {}
 }
