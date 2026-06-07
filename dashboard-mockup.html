@@ -2658,7 +2658,7 @@ function applyPremix(data) {
     const facs = (r.factures || []).map(f => `<span class="tag tag-o">${f}</span>`).join(' ') || '—';
     tbody.innerHTML += `<tr>
       <td><b>${r.codePremix}</b></td>
-      <td>—</td>
+      <td>${r.nom || r.producteur || '—'}</td>
       <td>${facs}</td>
       <td><span class="status s-ok">Enregistré</span></td>
     </tr>`;
