@@ -198,6 +198,8 @@
 
     /* ── MOBILE ── */
     @media(max-width:768px){
+      html{ font-size:17px; }
+      body{ font-size:16px; }
       /* Sidebar cachée, remplacée par overlay */
       .sidebar{
         transform:translateX(-100%);
@@ -234,8 +236,43 @@
 
       /* Stat grid 2 colonnes */
       .stat-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
-      .stat-value{ font-size:20px; }
-      .stat-card{ padding:14px 14px; }
+      .stat-value{ font-size:26px; }
+      .stat-label{ font-size:13px; }
+      .stat-badge{ font-size:12px; }
+      .stat-card{ padding:16px 14px; }
+
+      /* Titres et textes généraux */
+      .card-title{ font-size:17px; }
+      .card-sub{ font-size:13px; }
+      .topbar h1{ font-size:20px; }
+      .topbar-sub{ font-size:13px; }
+
+      /* Tables */
+      table{ font-size:14px; }
+      thead th{ font-size:12px; }
+      tbody td{ padding:12px 6px; }
+      .sub-text{ font-size:12px; }
+      .tag{ font-size:12px; padding:4px 9px; }
+      .status{ font-size:12px; padding:5px 10px; }
+
+      /* Navigation bas */
+      .bottom-nav-item{ font-size:11px; }
+      .bottom-nav-item .bn-icon{ font-size:22px; }
+
+      /* Ranking */
+      .rank-name{ font-size:15px; }
+      .rank-big{ font-size:15px; }
+      .rank-small{ font-size:12px; }
+
+      /* Formulaires */
+      .form-title{ font-size:17px; }
+      .form-group label{ font-size:12px; }
+
+      /* Login */
+      .login-name{ font-size:13px; }
+      .login-role{ font-size:11px; }
+      .login-av{ width:44px; height:44px; font-size:13px; }
+      .login-card{ padding:14px 8px; width:120px; }
 
       /* Tables scrollables */
       .card{ padding:14px; overflow-x:auto; }
