@@ -59,7 +59,7 @@
     .profile-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
     .profile-name{font-size:13px;font-weight:600;}
     .profile-arrow{font-size:10px;color:#aaa;}
-    .profile-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #efefef;border-radius:14px;padding:8px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:100;display:none;}
+    .profile-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #efefef;border-radius:14px;padding:8px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:600;display:none;max-height:80vh;overflow-y:auto;}
     .profile-dropdown.open{display:block;}
     .profile-dropdown-title{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.05em;padding:4px 8px 8px;}
     .profile-option{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .12s;}
@@ -268,6 +268,30 @@
     .cmd-jour-badge.actif{background:#d44218;color:#fff;}
     .cmd-jour-badge.prochain{background:#fbe8e2;color:#d44218;}
     .cmd-jour-badge.normal{background:#f0f0f0;color:#888;}
+
+    /* ── STOCK INGRÉDIENTS ── */
+    .ing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+    .ing-card{background:#fff;border:1.5px solid #e8e8e8;border-radius:12px;padding:13px 15px;}
+    .ing-card.low{border-color:#f5cbb8;background:#fdf8f6;}
+    .ing-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+    .ing-qty{font-size:22px;font-weight:700;color:#1a1a2e;}
+    .ing-unit{font-size:11px;color:#aaa;font-weight:400;}
+    .ing-bar{height:5px;background:#f0f0f0;border-radius:3px;margin-top:6px;overflow:hidden;}
+    .ing-bar-fill{height:100%;border-radius:3px;background:#27ae60;transition:width .3s;}
+    .ing-bar-fill.low{background:#e6a800;}
+    .ing-bar-fill.empty{background:#d44218;}
+    .ing-input{padding:8px 10px;border:1.5px solid #e8e8e8;border-radius:9px;font-size:13px;text-align:right;outline:none;width:100%;background:#f9f9f9;}
+    .ing-input:focus{border-color:#d44218;background:#fff;}
+    /* Sacs dispo */
+    .sac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+    .sac-card{border-radius:12px;padding:12px 14px;border:1.5px solid #e8e8e8;background:#fff;}
+    .sac-card.ok{border-color:#27ae60;background:#f0faf4;}
+    .sac-card.nok{border-color:#e8e8e8;background:#f9f9f9;opacity:.85;}
+    .sac-name{font-size:13px;font-weight:700;margin-bottom:6px;}
+    .sac-status{font-size:12px;font-weight:700;}
+    .sac-status.ok{color:#27ae60;}
+    .sac-status.nok{color:#d44218;}
+    .sac-manquant{font-size:11px;color:#d44218;margin-top:3px;}
 
     @media print{ body{ display:none; } }
 
@@ -544,7 +568,8 @@
   <button class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</button>
   <button class="nav-item" id="nav-premix" onclick="showPage('premix',this)"><span class="nav-icon">🥣</span> Premix</button>
   <button class="nav-item" id="nav-production" onclick="showPage('production',this)"><span class="nav-icon">🏭</span> Production</button>
-  <button class="nav-item" id="nav-stock" onclick="showPage('stock',this)"><span class="nav-icon">📦</span> Stock</button>
+  <button class="nav-item" id="nav-stock" onclick="showPage('stock',this)"><span class="nav-icon">📦</span> Stock cookies</button>
+  <button class="nav-item" id="nav-ingredients" onclick="showPage('ingredients',this)"><span class="nav-icon">🧂</span> Stock ingrédients</button>
   <button class="nav-item" id="nav-frigo" onclick="showPage('frigo',this)"><span class="nav-icon">🧊</span> Frigo / Sorties</button>
   <button class="nav-item" id="nav-ixelles" onclick="showPage('ixelles',this)"><span class="nav-icon">🏪</span> Commandes Ixelles</button>
 
@@ -651,6 +676,10 @@
 
   <!-- ══════════════════ DASHBOARD ══════════════════ -->
   <div id="page-dashboard" class="page active">
+
+    <!-- Bannière commande Ixelles en attente -->
+    <div id="dashboard-ixelles-banner" style="display:none;margin-bottom:14px"></div>
+
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button class="btn btn-secondary" id="btn-refresh-dashboard" onclick="refreshDashboard()" style="font-size:12px;padding:6px 14px;display:flex;align-items:center;gap:6px">🔄 Actualiser le dashboard</button>
     </div>
@@ -685,6 +714,32 @@
       <div class="card">
         <div class="card-header"><div><div class="card-title">🏆 Classement stock</div><div class="card-sub">Total Big en frigo</div></div></div>
         <div id="dashboard-classement"><div class="empty" style="padding:16px">Chargement…</div></div>
+      </div>
+    </div>
+
+    <!-- Prémix à faire + Mini calendrier -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+
+      <!-- Prémix à faire aujourd'hui -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">🥣 Bacs à préparer</div><div class="card-sub">Bacs vides à refaire</div></div>
+          <button class="view-all" onclick="showPage('premix',document.getElementById('nav-premix'))">Aller au Premix →</button>
+        </div>
+        <div id="dashboard-bacs-vides">
+          <div class="empty" style="padding:12px;font-size:12px">Chargement…</div>
+        </div>
+      </div>
+
+      <!-- Mini calendrier de production -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">📅 À produire</div><div class="card-sub">Selon l'urgence du stock</div></div>
+          <button class="view-all" onclick="showPage('production',document.getElementById('nav-production'))">Production →</button>
+        </div>
+        <div id="dashboard-mini-cal" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="empty" style="grid-column:1/-1;padding:12px;font-size:12px">Chargement…</div>
+        </div>
       </div>
     </div>
 
@@ -758,11 +813,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label>N° de sac *</label>
+          <label>N° de bac *</label>
           <select id="pmx-sac" onchange="autoFillPmxCode()">
             <option value="">-- Choisir --</option>
-            <option value="1">Sac 1</option>
-            <option value="2">Sac 2</option>
+            <option value="1">Bac 1</option>
+            <option value="2">Bac 2</option>
           </select>
         </div>
         <div></div>
@@ -818,7 +873,7 @@
     <div class="card">
       <div class="card-header"><div><div class="card-title">Codes Premix enregistrés</div></div></div>
       <table>
-        <thead><tr><th>Code Premix</th><th>Saveur · Sac</th><th>Producteur</th><th>Factures</th><th>Statut</th><th></th></tr></thead>
+        <thead><tr><th>Code Premix</th><th>Saveur · Bac</th><th>Producteur</th><th>Factures</th><th>Statut</th><th></th></tr></thead>
         <tbody id="pmx-table">
           <tr><td colspan="5" class="empty">Chargement…</td></tr>
         </tbody>
@@ -1256,6 +1311,110 @@
     </div>
   </div>
 
+  <!-- ══════════════════ STOCK INGRÉDIENTS ══════════════════ -->
+  <div id="page-ingredients" class="page">
+
+    <!-- Stock actuel -->
+    <div class="card" style="margin-bottom:18px">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
+        <div><div class="card-title">📊 Stock actuel des ingrédients</div><div class="card-sub">🟢 OK · 🟠 Bientôt vide · 🔴 Épuisé</div></div>
+        <div style="display:flex;gap:8px" id="stock-edit-btns">
+          <button class="btn btn-secondary" onclick="toggleStockEdit()" id="btn-edit-stock" style="font-size:11px;padding:5px 12px">✏️ Modifier</button>
+          <button class="btn btn-primary" onclick="saveStockCorrections()" id="btn-save-stock" style="font-size:11px;padding:5px 12px;display:none">💾 Enregistrer corrections</button>
+          <button class="btn btn-secondary" onclick="cancelStockEdit()" id="btn-cancel-stock" style="font-size:11px;padding:5px 12px;display:none">✕ Annuler</button>
+        </div>
+      </div>
+      <div id="ing-edit-banner" style="display:none;background:#fef7d6;border-radius:9px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:#a07800;font-weight:600">
+        ✏️ Mode correction — modifiez les valeurs puis cliquez "Enregistrer corrections"
+      </div>
+      <div class="ing-grid" id="ing-stock-grid">
+        <div class="empty" style="grid-column:1/-1;padding:20px">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- Calculateur de consommation (admins uniquement) -->
+    <div id="section-conso-ing" style="display:none;margin-bottom:18px">
+      <div class="form-section">
+        <div class="form-title">🧮 Calculateur — consommation après premix</div>
+        <div style="background:#e0edf8;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0662aa">
+          💡 Après avoir fait tes bacs, entre les quantités utilisées. Elles seront soustraites du stock automatiquement. Les recettes restent chez toi.
+        </div>
+        <div class="form-grid fg-2" style="margin-bottom:13px">
+          <div class="form-group">
+            <label>Référence (ex: SUZZY Bac 1 + WOODY Bac 2)</label>
+            <input type="text" id="conso-ref" placeholder="Ex: SUZZY Bac 1">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="conso-date">
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Quantités consommées (grammes — laisser à 0 si non utilisé)</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="conso-inputs"></div>
+        <div id="conso-preview" style="display:none;background:#f7f8fa;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Aperçu stock après déduction</div>
+          <div id="conso-preview-list" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" onclick="saveConsommation()">💾 Déduire du stock</button>
+          <button class="btn btn-secondary" onclick="resetConsommation()">↺ Vider</button>
+          <span class="toast" id="toast-conso"></span>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-header"><div><div class="card-title">📋 Historique des consommations</div><div class="card-sub">Déductions après fabrication des bacs</div></div></div>
+        <table>
+          <thead><tr><th>Date</th><th>Référence</th><th>Ingrédients déduits</th></tr></thead>
+          <tbody id="conso-historique-table">
+            <tr><td colspan="3" class="empty">Aucune consommation enregistrée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section A : Saisie livraison (admins uniquement) -->
+    <div id="section-livraison-ing" style="display:none">
+      <div class="form-section">
+        <div class="form-title">📥 Enregistrer une livraison d'ingrédients</div>
+        <div class="form-grid fg-2" style="margin-bottom:13px">
+          <div class="form-group">
+            <label>N° BL (bon de livraison) *</label>
+            <input type="text" id="ing-bl" placeholder="Ex: FW26001234">
+          </div>
+          <div class="form-group">
+            <label>Fournisseur</label>
+            <select id="ing-fournisseur">
+              <option value="">-- Sélectionner --</option>
+              <option>Foodflow</option><option>Bruyerre</option><option>Colruyt</option>
+              <option>Hygiena</option><option>Makady</option><option>De Notten Shop</option><option>Autre</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Quantités reçues (en grammes — laisser à 0 si non livré)</div>
+        <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px" id="ing-livraison-inputs"></div>
+        <div class="form-footer">
+          <button class="btn btn-primary" onclick="saveLivraisonIngredients()">💾 Enregistrer la livraison</button>
+          <button class="btn btn-secondary" onclick="resetLivraison()">↺ Vider</button>
+          <span class="toast" id="toast-ing"></span>
+        </div>
+      </div>
+
+      <!-- Historique livraisons -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">📋 Historique des livraisons</div><div class="card-sub">Date et N° BL</div></div>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>N° BL</th><th>Fournisseur</th></tr></thead>
+          <tbody id="ing-historique-table">
+            <tr><td colspan="3" class="empty">Aucune livraison enregistrée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ══════════════════ COMMANDES IXELLES ══════════════════ -->
   <div id="page-ixelles" class="page">
 
@@ -1456,13 +1615,13 @@
 </main>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxFDHuFHQ7e61gnR3D0s-YjpTeBLCfCNEgRSfbwiXOslCPvUBnTceblkWWXkgnvCiCV/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxI56XHgMtfflQXKr28zrgmZiy4AF1YD6SpsJG21Y5HmNUngw8z5jpxkPxqkbs_zjZH/exec';
 
 // ─────────────────────────────────────
 // PROFILS & ACCÈS AUX ONGLETS
 // ─────────────────────────────────────
-const ALL_PAGES   = ['dashboard','premix','production','stock','frigo','ixelles','reception','factures','historique','alertes','parametres'];
-const PROD_PAGES  = ['dashboard','premix','production','stock','frigo','ixelles','historique','alertes','parametres'];
+const ALL_PAGES   = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','reception','factures','historique','alertes','parametres'];
+const PROD_PAGES  = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','historique','alertes','parametres'];
 const FRIGO_PAGES = ['dashboard','frigo','ixelles'];
 
 const PROFILES = {
@@ -1481,7 +1640,7 @@ const PROFILES = {
   Delia:     { color:'#9b59b6', initial:'DR', role:'Équipe vente',   pages: FRIGO_PAGES },
 };
 
-const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', ixelles:'Commandes Magasin Ixelles', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres' };
+const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', ixelles:'Commandes Magasin Ixelles', ingredients:'Stock Ingrédients', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres' };
 
 const FULL_NAMES = {
   Lila:'Lila Doudou', Virginia:'Virginia Kunnen', Abenazer:'Abenazer Hailu',
@@ -1521,6 +1680,10 @@ function selectProfile(name) {
     if (el) el.value = fullName;
   });
   document.getElementById('profile-dropdown').classList.remove('open');
+  // Rafraîchir la bannière Ixelles selon le nouveau profil
+  updateDashboardIxellesBanner();
+  // Rafraîchir les commandes Ixelles si l'onglet est ouvert
+  if (document.getElementById('page-ixelles')?.classList.contains('active')) loadCommandesIxelles();
 }
 
 function toggleProfileMenu() {
@@ -1543,9 +1706,10 @@ function showPage(name, btn) {
   if (name === 'reception') loadRecentInvoices();
   if (name === 'factures') setTimeout(() => { loadCorrespondances(); }, 60);
   if (name === 'premix' || name === 'production') refreshFactureLists();
-  if (name === 'dashboard') setTimeout(() => drawChart(currentChartMode), 60);
+  if (name === 'dashboard') setTimeout(() => { drawChart(currentChartMode); updateDashboardIxellesBanner(); updateDashboardBacsVides(); updateDashboardMiniCal(); }, 60);
   if (name === 'production') setTimeout(() => { buildProdByProducer(); buildProdLegend(); drawProdChart(); initProdChartEvents(); updateLotsduJour(); updateCalendrierProduction(); }, 60);
-  if (name === 'ixelles') setTimeout(() => { initCommandeIxelles(); }, 60);
+  if (name === 'ixelles')     setTimeout(() => { initCommandeIxelles(); }, 60);
+  if (name === 'ingredients') setTimeout(() => { initIngredientsPage(); }, 60);
   if (name === 'premix') setTimeout(() => { updateInventairePremix(); updateManquantsSummary(); }, 60);
 }
 
@@ -1795,7 +1959,6 @@ async function refreshDashboard() {
     btn.style.background = '#e0edf8';
     btn.style.color = '#0662aa';
   } catch {
-    // Même en cas d'erreur API, on recharge depuis localStorage
     applyProduction([]);
     applySorties([]);
     btn.textContent = '✓ Local rechargé';
@@ -1918,6 +2081,64 @@ const SAVEUR_COLORS = {
   EMMY:'#d44218', DANNY:'#d44218', WOODY:'#0662aa'
 };
 
+// ── Bacs à préparer (bacs vides dans l'inventaire) ──
+function updateDashboardBacsVides() {
+  const el = document.getElementById('dashboard-bacs-vides');
+  if (!el) return;
+  const inv = getInventairePremix();
+  const vides = [];
+  ALL_SAVEURS_PMX.forEach(sav => {
+    ['1','2'].forEach(num => {
+      const s = inv[sav]?.[num];
+      if (!s || s.statut !== 'dispo') vides.push({ sav, num });
+    });
+  });
+  if (!vides.length) {
+    el.innerHTML = '<div style="color:#27ae60;font-size:12px;font-weight:600;padding:8px 0">✅ Tous les bacs sont remplis !</div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px">'
+    + vides.map(({sav, num}) => {
+      const isBlue = sav === 'WOODY';
+      return '<div style="display:flex;align-items:center;gap:6px;background:#fdf0ec;border:1px solid #f5cbb8;border-radius:9px;padding:6px 10px">'
+        + '<span class="tag ' + (isBlue?'tag-b':'tag-o') + '" style="font-size:10px">' + sav + '</span>'
+        + '<span style="font-size:12px;font-weight:700;color:#d44218">Bac ' + num + '</span>'
+        + '</div>';
+    }).join('')
+    + '</div>'
+    + '<div style="font-size:11px;color:#aaa;margin-top:8px">' + vides.length + ' bac' + (vides.length>1?'s':'') + ' à préparer</div>';
+}
+
+// ── Mini calendrier de production ──
+function updateDashboardMiniCal() {
+  const el = document.getElementById('dashboard-mini-cal');
+  if (!el) return;
+  const ALL_SAV = ['SUZZY','JACKY','BENNY','DAVY','MOLLY','WALLY','CHARLY','LENI','EMMY','WOODY','DANNY'];
+  const SEUIL_URGENCE = 80, SEUIL_PRIORITE = 200;
+  const items = ALL_SAV.map(sav => {
+    const big = stockLocal.filter(l => l.saveur === sav).reduce((s,l) => s + l.big, 0);
+    let niveau, bgColor, txtColor, labelCourt;
+    if (big === 0)                  { niveau='urgence'; bgColor='#fde8e8'; txtColor='#d44218'; labelCourt='🔴 Urgent'; }
+    else if (big < SEUIL_URGENCE)   { niveau='critique'; bgColor='#fdf0ec'; txtColor='#d44218'; labelCourt='🔴 Critique'; }
+    else if (big < SEUIL_PRIORITE)  { niveau='priorite'; bgColor='#fef7d6'; txtColor='#a07800'; labelCourt='🟡 Bientôt'; }
+    else                            { niveau='ok';       bgColor='#f0faf4'; txtColor='#27ae60'; labelCourt='🟢 OK'; }
+    return { sav, big, niveau, bgColor, txtColor, labelCourt };
+  }).sort((a,b) => {
+    const order = {urgence:0,critique:1,priorite:2,ok:3};
+    return order[a.niveau] - order[b.niveau] || a.big - b.big;
+  });
+  const isBlueF = sav => sav === 'WOODY';
+  el.innerHTML = items.map(it =>
+    '<div style="background:' + it.bgColor + ';border-radius:9px;padding:7px 9px;display:flex;flex-direction:column;gap:2px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between">'
+    + '<span class="tag ' + (isBlueF(it.sav)?'tag-b':'tag-o') + '" style="font-size:10px">' + it.sav + '</span>'
+    + '<span style="font-size:9px;font-weight:700;color:' + it.txtColor + '">' + it.labelCourt + '</span>'
+    + '</div>'
+    + '<div style="font-size:11px;font-weight:700;color:' + it.txtColor + '">' + it.big + ' Big</div>'
+    + '</div>'
+  ).join('');
+}
+
 function updateDashboardClassement() {
   const container = document.getElementById('dashboard-classement');
   if (!container) return;
@@ -2020,6 +2241,8 @@ function updateDashboardStockTable() {
 
   updateDashboardClassement();
   updateChartWithStock();
+  updateDashboardBacsVides();
+  updateDashboardMiniCal();
   if (document.getElementById('page-production')?.classList.contains('active')) updateCalendrierProduction();
   if (document.getElementById('page-ixelles')?.classList.contains('active')) { buildIxellesForm(); loadCommandesIxelles(); }
 }
@@ -2359,7 +2582,7 @@ function showBonLivraison({ client, saveur, lots, boites, typeBoite='plastique',
 }
 
 // Stock local (depuis getStock) — utilisé pour afficher les lots par saveur
-let stockLocal = [];
+let stockLocal = JSON.parse(localStorage.getItem('kooki_stock_local') || '[]');
 
 async function saveSortie() {
   const type      = document.getElementById('sortie-type').value;
@@ -2439,6 +2662,7 @@ async function saveSortie() {
         });
       });
       localStorage.setItem('kooki_sorties', JSON.stringify(storedSorties));
+      localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
 
       // Boîtes plastiques B2B
       if (type === 'b2b' && boites > 0) {
@@ -2504,10 +2728,528 @@ function resetSortie() {
 }
 
 // ─────────────────────────────────────
+// CALCULATEUR DE CONSOMMATION
+// ─────────────────────────────────────
+
+function buildConsoInputs() {
+  const container = document.getElementById('conso-inputs');
+  if (!container || container.children.length > 0) return;
+  container.innerHTML = INGREDIENTS_LIST.map(ing => {
+    const safeId = 'conso_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const qty    = stockIngredients[ing] || 0;
+    const kg     = qty >= 1000 ? (qty/1000).toFixed(1)+'kg' : qty+'g';
+    return `<div class="form-group">
+      <label>${ing} <span style="font-weight:400;color:#aaa">(stock : ${kg})</span></label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" min="0" class="ing-input" id="${safeId}" placeholder="0"
+          oninput="updateConsoPreview()">
+        <span style="font-size:11px;color:#aaa;white-space:nowrap">g</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateConsoPreview() {
+  const preview     = document.getElementById('conso-preview');
+  const previewList = document.getElementById('conso-preview-list');
+  if (!preview || !previewList) return;
+
+  const seuils = getSeuils();
+  const changes = [];
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'conso_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const used   = parseInt(document.getElementById(safeId)?.value) || 0;
+    if (used > 0) changes.push({ ing, used });
+  });
+
+  if (!changes.length) { preview.style.display = 'none'; return; }
+  preview.style.display = '';
+
+  previewList.innerHTML = changes.map(({ing, used}) => {
+    const current = stockIngredients[ing] || 0;
+    const after   = Math.max(0, current - used);
+    const seuil   = seuils[ing] || 2000;
+    const col     = getIngColor(after, seuil);
+    const afterFmt = after >= 1000 ? (after/1000).toFixed(1)+'kg' : after+'g';
+    return `<div style="background:${col.bg};border:1px solid ${col.border};border-radius:8px;padding:7px 10px">
+      <div style="font-size:11px;font-weight:700">${ing}</div>
+      <div style="font-size:12px;font-weight:700;color:${col.txt}">${afterFmt}</div>
+      <div style="font-size:10px;color:#aaa">−${used}g · ${col.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function saveConsommation() {
+  const ref  = (document.getElementById('conso-ref')?.value  || '').trim();
+  const date = document.getElementById('conso-date')?.value || new Date().toISOString().slice(0,10);
+
+  const conso = {};
+  let total = 0;
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'conso_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const used   = parseInt(document.getElementById(safeId)?.value) || 0;
+    if (used > 0) { conso[ing] = used; total += used; }
+  });
+
+  if (!total) { toast('conso', '⚠️ Entre au moins une quantité', 'err'); return; }
+
+  // Déduire du stock local
+  Object.entries(conso).forEach(([ing, used]) => {
+    stockIngredients[ing] = Math.max(0, (stockIngredients[ing] || 0) - used);
+  });
+  localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+
+  // Sauvegarder dans l'historique
+  const hist = JSON.parse(localStorage.getItem('kooki_consommations_ing') || '[]');
+  hist.unshift({ date, ref, conso, total });
+  localStorage.setItem('kooki_consommations_ing', JSON.stringify(hist));
+
+  // Mettre à jour l'affichage
+  renderIngStockGrid();
+  renderHistoriqueConsommations();
+  resetConsommation();
+  toast('conso', '✓ Stock mis à jour — ' + Object.keys(conso).length + ' ingrédient(s) déduit(s)', 'ok');
+}
+
+function resetConsommation() {
+  const ref  = document.getElementById('conso-ref');  if (ref)  ref.value  = '';
+  const date = document.getElementById('conso-date'); if (date) date.value = '';
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'conso_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const el = document.getElementById(safeId); if (el) el.value = '';
+  });
+  const preview = document.getElementById('conso-preview');
+  if (preview) preview.style.display = 'none';
+  // Rebuild pour mettre à jour les stocks affichés dans les labels
+  const container = document.getElementById('conso-inputs');
+  if (container) container.innerHTML = '';
+  buildConsoInputs();
+}
+
+function renderHistoriqueConsommations() {
+  const tbody = document.getElementById('conso-historique-table');
+  if (!tbody) return;
+  const hist = JSON.parse(localStorage.getItem('kooki_consommations_ing') || '[]');
+  if (!hist.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">Aucune consommation enregistrée.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = hist.map(r => {
+    const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
+    const details = Object.entries(r.conso || {})
+      .map(([ing, used]) => `<span class="tag tag-b" style="font-size:10px;margin:1px">${ing} −${used}g</span>`)
+      .join(' ');
+    return `<tr>
+      <td class="sub-text">${d}</td>
+      <td><b>${r.ref || '—'}</b></td>
+      <td style="line-height:1.8">${details}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// STOCK INGRÉDIENTS
+// ─────────────────────────────────────
+
+const INGREDIENTS_LIST = [
+  'Sucre brun','Sucre blanc','Levure chimique','Bicarbonate','Maizena','Sel',
+  'Chocolat blanc','Chocolat noir','Chocolat lait','Caramel','Vegan','Noix',
+  'Poudre d\'amande','Poudre de cacao','Pistache','Pistache en poudre','Coconut','Cacahuètes'
+];
+
+// Seuils minimum par ingrédient (en grammes) — modifiables via localStorage
+const SEUILS_DEFAULT = {
+  'Sucre brun':5000,'Sucre blanc':5000,'Levure chimique':500,'Bicarbonate':500,
+  'Maizena':2000,'Sel':1000,'Chocolat blanc':3000,'Chocolat noir':3000,
+  'Chocolat lait':3000,'Caramel':2000,'Vegan':2000,'Noix':2000,
+  'Poudre d\'amande':2000,'Poudre de cacao':2000,'Pistache':2000,
+  'Pistache en poudre':1000,'Coconut':2000,'Cacahuètes':2000
+};
+
+function getSeuils() {
+  return Object.assign({}, SEUILS_DEFAULT, JSON.parse(localStorage.getItem('kooki_seuils_ing') || '{}'));
+}
+
+function getIngColor(qty, seuil) {
+  if (qty <= 0)           return { bg:'#fde8e8', border:'#d44218', dot:'#d44218', txt:'#d44218', label:'Épuisé' };
+  if (qty < seuil * 0.3)  return { bg:'#fdf0ec', border:'#f5cbb8', dot:'#d44218', txt:'#d44218', label:'Critique' };
+  if (qty < seuil)         return { bg:'#fef7d6', border:'#f0d96e', dot:'#e6a800', txt:'#a07800', label:'Bientôt vide' };
+  return                          { bg:'#f0faf4', border:'#a8d8b4', dot:'#27ae60', txt:'#1a7a3a', label:'OK' };
+}
+
+const SACS_LIST = [
+  'SUZZY 1','SUZZY 2','WOODY 1','WOODY 2','EMMY 1','EMMY 2',
+  'BENNY 1','BENNY 2','JACKY 1','JACKY 2','MOLLY 1','MOLLY 2',
+  'CHARLY 1','CHARLY 2','DAVY 1','DAVY 2','WALLY 1','WALLY 2',
+  'LENI 1','LENI 2','DANNY 1','DANNY 2'
+];
+
+// Stock local ingrédients (depuis API)
+let stockIngredients = {}; // { 'Sucre brun': 5000, ... } en grammes
+
+// Disponibilité des sacs (calculée côté serveur, recettes jamais exposées)
+let sacsDispo = []; // [{ sac:'SUZZY 1', ok:true, manquants:[] }, ...]
+
+function initIngredientsPage() {
+  // Afficher la section livraison uniquement pour les admins
+  const sectionLiv  = document.getElementById('section-livraison-ing');
+  const sectionConso = document.getElementById('section-conso-ing');
+  if (sectionLiv)  sectionLiv.style.display  = canPrepareOrder() ? '' : 'none';
+  if (sectionConso) sectionConso.style.display = canPrepareOrder() ? '' : 'none';
+
+  // Construire les inputs livraison et consommation
+  buildLivraisonInputs();
+  buildConsoInputs();
+  renderHistoriqueConsommations();
+
+  // Charger les données depuis l'API
+  loadIngredients();
+}
+
+function buildLivraisonInputs() {
+  const container = document.getElementById('ing-livraison-inputs');
+  if (!container || container.children.length > 0) return; // déjà construit
+  container.innerHTML = INGREDIENTS_LIST.map(ing => {
+    const safeId = 'ing_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    return `<div class="form-group">
+      <label>${ing}</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" min="0" class="ing-input" id="${safeId}" placeholder="0">
+        <span style="font-size:11px;color:#aaa;white-space:nowrap">g</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadIngredients() {
+  // 1. Charger depuis localStorage d'abord (survie au refresh)
+  const cached = JSON.parse(localStorage.getItem('kooki_stock_ingredients') || '{}');
+  if (Object.keys(cached).length) Object.assign(stockIngredients, cached);
+
+  // 2. Écraser avec l'API si disponible (source de vérité)
+  try {
+    const data = await fetchAPI('getStockIngredients');
+    if (Array.isArray(data) && data.length) {
+      data.forEach(r => {
+        if (r.nom && r.stock !== undefined) stockIngredients[r.nom] = Number(r.stock) || 0;
+      });
+      localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+    }
+  } catch {
+    // API indisponible → on garde le cache localStorage
+  }
+
+  // Charger la disponibilité des sacs (calculée serveur, recettes cachées)
+  try {
+    const data = await fetchAPI('getSacsDispo');
+    if (Array.isArray(data)) sacsDispo = data;
+  } catch {}
+
+  // Charger l'historique des livraisons depuis l'API
+  try {
+    const hist = await fetchAPI('getLivraisonsIngredients');
+    if (Array.isArray(hist) && hist.length) {
+      const local = JSON.parse(localStorage.getItem('kooki_livraisons_ing') || '[]');
+      const localBLs = new Set(local.map(r => r.bl));
+      hist.forEach(r => {
+        if (r.bl && !localBLs.has(r.bl)) {
+          local.push({ date: r.date, bl: r.bl, fournisseur: r.fournisseur || '' });
+        }
+      });
+      local.sort((a, b) => new Date(b.date) - new Date(a.date));
+      localStorage.setItem('kooki_livraisons_ing', JSON.stringify(local));
+    }
+  } catch {}
+
+  renderIngStockGrid();
+  renderSacsDispoGrid();
+  renderHistoriqueLivraisons();
+}
+
+let ingEditMode = false;
+
+function renderIngStockGrid() {
+  const grid = document.getElementById('ing-stock-grid');
+  if (!grid) return;
+
+  if (!Object.keys(stockIngredients).length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Aucun stock enregistré. Effectuez une livraison pour commencer.</div>';
+    return;
+  }
+
+  const seuils = getSeuils();
+  grid.innerHTML = INGREDIENTS_LIST.map(ing => {
+    const qty    = stockIngredients[ing] || 0;
+    const seuil  = seuils[ing] || 2000;
+    const col    = getIngColor(qty, seuil);
+    const kg     = qty >= 1000 ? (qty / 1000).toFixed(1) + ' kg' : qty + ' g';
+    const pct    = Math.min(100, Math.round((qty / seuil) * 100));
+    const safeId = 'stk_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+
+    if (ingEditMode) {
+      return `<div class="ing-card" style="border-color:#e6a800;background:#fffbea">
+        <div class="ing-name">${ing}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <input type="number" min="0" id="${safeId}" value="${qty}"
+            style="flex:1;padding:6px 8px;border:1.5px solid #e6a800;border-radius:8px;font-size:14px;font-weight:700;outline:none;text-align:right"
+            onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e6a800'">
+          <span style="font-size:11px;color:#aaa">g</span>
+        </div>
+        <div style="font-size:10px;color:#a07800;margin-top:4px">Seuil : ${seuil >= 1000 ? (seuil/1000).toFixed(1)+'kg' : seuil+'g'}</div>
+      </div>`;
+    }
+
+    return `<div class="ing-card" style="background:${col.bg};border-color:${col.border}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="ing-name">${ing}</div>
+        <span style="width:8px;height:8px;border-radius:50%;background:${col.dot};flex-shrink:0"></span>
+      </div>
+      <div class="ing-qty" style="color:${col.txt}">${kg}<span class="ing-unit"> en stock</span></div>
+      <div class="ing-bar"><div class="ing-bar-fill" style="width:${pct}%;background:${col.dot}"></div></div>
+      <div style="font-size:10px;color:${col.txt};font-weight:600;margin-top:3px">${col.label}
+        <span style="font-weight:400;color:#aaa"> · min ${seuil >= 1000 ? (seuil/1000).toFixed(1)+'kg' : seuil+'g'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleStockEdit() {
+  if (!canPrepareOrder()) { alert('⚠️ Seuls les administrateurs peuvent modifier le stock.'); return; }
+  ingEditMode = true;
+  renderIngStockGrid();
+  document.getElementById('btn-edit-stock').style.display   = 'none';
+  document.getElementById('btn-save-stock').style.display   = '';
+  document.getElementById('btn-cancel-stock').style.display = '';
+  document.getElementById('ing-edit-banner').style.display  = '';
+}
+
+function cancelStockEdit() {
+  ingEditMode = false;
+  renderIngStockGrid();
+  document.getElementById('btn-edit-stock').style.display   = '';
+  document.getElementById('btn-save-stock').style.display   = 'none';
+  document.getElementById('btn-cancel-stock').style.display = 'none';
+  document.getElementById('ing-edit-banner').style.display  = 'none';
+}
+
+async function saveStockCorrections() {
+  const corrections = {};
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'stk_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const el = document.getElementById(safeId);
+    if (el) corrections[ing] = Math.max(0, parseInt(el.value) || 0);
+  });
+
+  // Mise à jour locale immédiate
+  Object.assign(stockIngredients, corrections);
+  localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+  cancelStockEdit();
+  renderIngStockGrid();
+
+  // Envoi API
+  try {
+    fetch(API, { method: 'POST', body: JSON.stringify({ action: 'corrigerStock', corrections }) })
+      .then(r => r.json())
+      .then(json => {
+        toast('ing', json?.success ? '✓ Stock corrigé !' : '✓ Corrigé localement', 'ok');
+        // Recalculer disponibilité sacs
+        loadIngredients();
+      })
+      .catch(() => toast('ing', '✓ Corrigé localement (hors ligne)', 'ok'));
+  } catch {
+    toast('ing', '✓ Corrigé localement (hors ligne)', 'ok');
+  }
+}
+
+function renderSacsDispoGrid() {
+  const grid = document.getElementById('sacs-dispo-grid');
+  if (!grid) return;
+
+  if (!sacsDispo.length) {
+    // Fallback si pas encore de données API : afficher inconnu
+    grid.innerHTML = SACS_LIST.map(sac => {
+      const parts = sac.split(' ');
+      const sav   = parts[0], num = parts[1];
+      const isBlue = sav === 'WOODY';
+      return `<div class="sac-card" style="opacity:.6">
+        <div class="sac-name"><span class="tag ${isBlue?'tag-b':'tag-o'}" style="font-size:11px">${sav}</span> Bac ${num}</div>
+        <div class="sac-status" style="color:#aaa">— Non calculé</div>
+        <div style="font-size:10px;color:#bbb;margin-top:3px">Vérifiez la connexion API</div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  grid.innerHTML = sacsDispo.map(s => {
+    const parts  = s.sac.split(' ');
+    const sav    = parts[0], num = parts[1];
+    const isBlue = sav === 'WOODY';
+    const mqs    = s.manquants || [];
+
+    return `<div class="sac-card ${s.ok ? 'ok' : 'nok'}">
+      <div class="sac-name">
+        <span class="tag ${isBlue?'tag-b':'tag-o'}" style="font-size:11px">${sav}</span>
+        <span style="margin-left:5px;font-size:12px;color:#888">Sac ${num}</span>
+      </div>
+      <div class="sac-status ${s.ok?'ok':'nok'}">${s.ok ? '✅ Peut être produit' : '❌ Ingrédient(s) manquant(s)'}</div>
+      ${mqs.length ? mqs.map(m => `<div class="sac-manquant">· ${m.nom} : −${m.deficit}g</div>`).join('') : ''}
+    </div>`;
+  }).join('');
+}
+
+async function saveLivraisonIngredients() {
+  const bl         = (document.getElementById('ing-bl')?.value || '').trim();
+  const fournisseur = document.getElementById('ing-fournisseur')?.value || '';
+  if (!bl) { toast('ing', '⚠️ N° BL requis', 'err'); return; }
+
+  const livraison = {};
+  let total = 0;
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'ing_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const qty = parseInt(document.getElementById(safeId)?.value) || 0;
+    livraison[ing] = qty;
+    total += qty;
+  });
+
+  if (total === 0) { toast('ing', '⚠️ Entrez au moins une quantité', 'err'); return; }
+
+  // Mise à jour locale immédiate
+  INGREDIENTS_LIST.forEach(ing => {
+    stockIngredients[ing] = (stockIngredients[ing] || 0) + (livraison[ing] || 0);
+  });
+  localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+  renderIngStockGrid();
+
+  // Sauvegarder dans l'historique local
+  const hist = JSON.parse(localStorage.getItem('kooki_livraisons_ing') || '[]');
+  hist.unshift({ date: new Date().toISOString(), bl, fournisseur });
+  localStorage.setItem('kooki_livraisons_ing', JSON.stringify(hist));
+  renderHistoriqueLivraisons();
+
+  // Envoi API
+  try {
+    fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'livraisonIngredients', bl, fournisseur, livraison })
+    })
+    .then(r => r.json())
+    .then(json => {
+      if (json?.success) {
+        toast('ing', '✓ Livraison enregistrée + stock mis à jour !', 'ok');
+        // Recharger la disponibilité des sacs (recalcul serveur)
+        loadIngredients();
+      } else {
+        toast('ing', '✓ Stock mis à jour localement (API : ' + (json?.error || 'indisponible') + ')', 'ok');
+      }
+    })
+    .catch(() => toast('ing', '✓ Stock mis à jour localement (hors ligne)', 'ok'));
+  } catch {
+    toast('ing', '✓ Stock mis à jour localement (hors ligne)', 'ok');
+  }
+
+  resetLivraison();
+}
+
+function resetLivraison() {
+  const bl = document.getElementById('ing-bl'); if (bl) bl.value = '';
+  const fo = document.getElementById('ing-fournisseur'); if (fo) fo.selectedIndex = 0;
+  INGREDIENTS_LIST.forEach(ing => {
+    const safeId = 'ing_' + ing.replace(/[^a-zA-Z0-9]/g, '_');
+    const el = document.getElementById(safeId); if (el) el.value = '';
+  });
+}
+
+function renderHistoriqueLivraisons() {
+  const tbody = document.getElementById('ing-historique-table');
+  if (!tbody) return;
+
+  // Fusionner localStorage + données API (chargées dans loadIngredients)
+  const local = JSON.parse(localStorage.getItem('kooki_livraisons_ing') || '[]');
+
+  if (!local.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">Aucune livraison enregistrée.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = local.map(r => {
+    const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    return `<tr>
+      <td class="sub-text">${d}</td>
+      <td><span class="bl-tag">${r.bl || '—'}</span></td>
+      <td>${r.fournisseur || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Déduire les ingrédients lors d'une production
+async function deduireIngredientsProduction(codePremix) {
+  // Trouver le sac depuis le premix stocké
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
+  const entry   = premixs.find(p => p.codePremix === codePremix);
+  if (!entry?.saveur || !entry?.sac) return;
+  const sacNom = entry.saveur + ' ' + entry.sac;
+
+  try {
+    const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'deduireIngredients', sacNom }) });
+    const json = await res.json();
+    if (json?.success) {
+      if (json.stockMisAJour) {
+        Object.assign(stockIngredients, json.stockMisAJour);
+        renderIngStockGrid();
+      }
+      if (document.getElementById('page-ingredients')?.classList.contains('active')) {
+        loadIngredients();
+      }
+    }
+  } catch {}
+}
+
+// ─────────────────────────────────────
 // COMMANDES MAGASIN IXELLES
 // ─────────────────────────────────────
 const ALL_SAVEURS_CMD = ['SUZZY','JACKY','BENNY','DAVY','MOLLY','WALLY','CHARLY','LENI','EMMY','WOODY','DANNY'];
 const COOKIES_PAR_BAC = 40;
+
+// Profils autorisés à préparer (valider) une commande Ixelles
+function canPrepareOrder() {
+  return ['Virginia','Abenazer','Sebastien','DavidD','Lila'].includes(currentProfile);
+}
+
+function updateDashboardIxellesBanner() {
+  const banner = document.getElementById('dashboard-ixelles-banner');
+  if (!banner) return;
+
+  const stored  = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  const pending = stored.filter(c => c.statut === 'en_attente');
+
+  if (!pending.length) { banner.style.display = 'none'; return; }
+
+  const cmd    = pending[0]; // la plus récente
+  const d      = new Date(cmd.date).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+  const total  = cmd.totalBacs || cmd.lignes.reduce((s, l) => s + l.bacs, 0);
+  const detail = cmd.lignes.map(l => `${l.bacs} bac${l.bacs>1?'s':''} ${l.saveur}`).join(' · ');
+  const isPreparer = canPrepareOrder();
+
+  banner.style.display = '';
+  banner.innerHTML = `
+    <div style="background:${isPreparer?'#fdf0ec':'#e0edf8'};border:1.5px solid ${isPreparer?'#f5cbb8':'#b0c8e8'};border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:${isPreparer?'#d44218':'#0662aa'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏪</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${isPreparer?'#d44218':'#0662aa'}">
+            ${pending.length > 1 ? pending.length + ' commandes Ixelles en attente' : 'Commande Magasin Ixelles en attente'}
+          </div>
+          <div style="font-size:12px;color:#888;margin-top:2px">${detail} · par ${cmd.par} · ${d}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="showPage('ixelles',document.getElementById('nav-ixelles'))"
+          style="padding:8px 16px;background:${isPreparer?'#d44218':'#0662aa'};color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">
+          ${isPreparer ? '🚀 Préparer la commande' : '👁️ Voir la commande'}
+        </button>
+      </div>
+    </div>`;
+}
 
 function initCommandeIxelles() {
   updateIxellesJourBadges();
@@ -2543,17 +3285,20 @@ function buildIxellesForm() {
   const container = document.getElementById('ixelles-saveurs-form');
   if (!container) return;
   container.innerHTML = ALL_SAVEURS_CMD.map(sav => {
-    const total = stockLocal.filter(l => l.saveur === sav).reduce((s, l) => s + l.big + l.small, 0);
-    const bacs  = Math.floor(total / COOKIES_PAR_BAC);
+    const total  = stockLocal.filter(l => l.saveur === sav).reduce((s, l) => s + l.big + l.small, 0);
+    const bacs   = Math.floor(total / COOKIES_PAR_BAC);
     const isBlue = sav === 'WOODY';
-    const ok = bacs > 0;
+    // Toujours activé — le stock se vérifie côté Virginia/Lila, pas ici
+    const stockInfo = bacs > 0
+      ? `<span style="font-size:12px;font-weight:700;color:#27ae60">${bacs} bac${bacs !== 1 ? 's' : ''} dispo</span>`
+      : `<span style="font-size:12px;font-weight:700;color:#aaa">Stock à vérifier</span>`;
     return `<div class="cmd-saveur-row" style="grid-template-columns:1fr 120px 1fr">
       <span class="tag ${isBlue ? 'tag-b' : 'tag-o'}" style="font-size:12px">${sav}</span>
-      <input type="number" min="0" max="${bacs}" class="cmd-input" id="cmd-bacs-${sav}" placeholder="0"
-        ${!ok ? 'disabled style="opacity:.4"' : ''} oninput="updateIxellesBoitesPreview()">
+      <input type="number" min="0" class="cmd-input" id="cmd-bacs-${sav}" placeholder="0"
+        oninput="updateIxellesBoitesPreview()">
       <div style="text-align:right">
-        <span style="font-size:12px;font-weight:700;color:${ok ? '#27ae60' : '#d44218'}">${bacs} bac${bacs !== 1 ? 's' : ''}</span>
-        <div style="font-size:10px;color:#aaa">${total} cookies</div>
+        ${stockInfo}
+        ${total > 0 ? `<div style="font-size:10px;color:#aaa">${total} cookies</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2609,6 +3354,7 @@ function submitCommandeIxelles() {
   toast('ixelles', '✓ Commande de ' + totalBacs + ' bac' + (totalBacs > 1 ? 's' : '') + ' envoyée !', 'ok');
   resetCommandeIxelles();
   loadCommandesIxelles();
+  updateDashboardIxellesBanner();
 }
 
 function resetCommandeIxelles() {
@@ -2654,7 +3400,12 @@ function cmdCardHTML(cmd) {
       <span style="font-size:20px;font-weight:700;color:#1a7a3a">${totalBacs} bac${totalBacs > 1 ? 's' : ''}</span>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-      ${globalOk || globalPartial ? `<button onclick="validerCommandeIxelles(${cmd.id})" style="flex:1;padding:9px;background:#27ae60;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🚀 Valider et préparer la sortie</button>` : ''}
+      ${canPrepareOrder() && (globalOk || globalPartial)
+        ? `<button onclick="validerCommandeIxelles(${cmd.id})" style="flex:1;padding:9px;background:#27ae60;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">🚀 Préparer la commande</button>`
+        : canPrepareOrder()
+          ? `<div style="flex:1;padding:9px;background:#f0f0f0;color:#aaa;border-radius:9px;font-size:12px;text-align:center">❌ Stock insuffisant</div>`
+          : `<div style="flex:1;padding:9px;background:#e0edf8;color:#0662aa;border-radius:9px;font-size:12px;text-align:center;font-weight:600">✓ Commande transmise — en attente de préparation</div>`
+      }
       <button onclick="annulerCommandeIxelles(${cmd.id})" style="padding:9px 14px;background:#f0f0f0;color:#888;border:none;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">✕</button>
     </div>
   </div>`;
@@ -2682,31 +3433,74 @@ function validerCommandeIxelles(id) {
   const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
   const cmd    = stored.find(c => c.id === id);
   if (!cmd) return;
-  showPage('frigo', document.getElementById('nav-frigo'));
-  document.getElementById('sortie-type').value = 'magasin';
-  toggleDestination();
-  saveurBlockCount = 0;
-  document.getElementById('saveurs-blocks').innerHTML = '';
+
+  const now      = new Date();
+  const date     = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
+  const time     = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  const livreur  = FULL_NAMES[currentProfile] || currentProfile;
+  const allLots  = [];
+
+  // 1. Calculer FIFO pour chaque saveur et déduire du stockLocal
   cmd.lignes.forEach(l => {
     const fifo = calculerFIFO_bacs(l.saveur, l.bacs);
-    if (!fifo.plan.length) return;
-    addSaveurBlock();
-    const bid = saveurBlockCount;
-    const sel = document.getElementById('saveur-sel-' + bid);
-    if (sel) { sel.value = l.saveur; loadLotsBlock(bid); }
-    setTimeout(() => {
-      fifo.plan.forEach(p => {
-        const bigEl = document.getElementById('b' + bid + '-big-' + p.code);
-        const smEl  = document.getElementById('b' + bid + '-small-' + p.code);
-        if (bigEl) bigEl.value = p.big;
-        if (smEl)  smEl.value  = p.small;
-      });
-      calcBoites();
-    }, 150);
+    fifo.plan.forEach(p => {
+      // Déduire du stockLocal
+      const s = stockLocal.find(s => s.code === p.code);
+      if (s) { s.big -= p.big; s.small -= p.small; }
+      allLots.push({ saveur: l.saveur, code: p.code, big: p.big, small: p.small });
+    });
   });
+
+  // 2. Sauvegarder le nouveau stockLocal
+  localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
+
+  // 3. Enregistrer dans l'historique des sorties
+  const storedSorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  const totalBacs = cmd.totalBacs || cmd.lignes.reduce((s, l) => s + l.bacs, 0);
+  allLots.forEach(lot => {
+    storedSorties.unshift({
+      date:        now.toISOString(),
+      saveur:      lot.saveur,
+      destination: 'Magasin Ixelles',
+      lot:         lot.code,
+      big:         lot.big,
+      small:       lot.small,
+      boites:      totalBacs,
+      producteur:  livreur,
+    });
+  });
+  localStorage.setItem('kooki_sorties', JSON.stringify(storedSorties));
+
+  // 4. Ajouter dans l'historique frigo (DOM)
+  const tbody = document.getElementById('sortie-history');
+  if (tbody) {
+    allLots.forEach(lot => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="sub-text">${date} ${time}</td>
+        <td><span class="tag tag-o">${lot.saveur}</span></td>
+        <td><b>Magasin Ixelles</b></td>
+        <td>${lot.code}</td>
+        <td>${lot.big}</td><td>${lot.small}</td>
+        <td>${totalBacs} bac${totalBacs>1?'s':''}</td>
+        <td class="sub-text">${livreur}</td>`;
+      tbody.prepend(tr);
+    });
+  }
+
+  // 5. Mettre à jour les affichages stock
+  updateStockPage();
+  updateDashboardStockTable();
+  buildIxellesForm(); // rafraîchir les bacs disponibles
+
+  // 6. Marquer la commande comme validée
   cmd.statut = 'valide';
   localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored));
   loadCommandesIxelles();
+  updateDashboardIxellesBanner();
+
+  // 7. Confirmation visuelle
+  toast('ixelles', '✅ Commande préparée — stock mis à jour !', 'ok');
 }
 
 function annulerCommandeIxelles(id) {
@@ -2715,6 +3509,7 @@ function annulerCommandeIxelles(id) {
   const idx    = stored.findIndex(c => c.id === id);
   if (idx !== -1) { stored[idx].statut = 'annule'; localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored)); }
   loadCommandesIxelles();
+  updateDashboardIxellesBanner();
 }
 
 
@@ -2904,7 +3699,7 @@ function updateInventairePremix() {
           title="${state==='manquant'?'Ingrédient manquant — voir récapitulatif':isDispo?'Cliquer pour marquer vide':'Cliquer pour marquer disponible'}">
         <div class="pmx-sac-dot" style="background:${COLOR[state]}"></div>
         <div>
-          <div style="font-size:11px;font-weight:700;color:${TXTCOL[state]}">Sac ${num}</div>
+          <div style="font-size:11px;font-weight:700;color:${TXTCOL[state]}">Bac ${num}</div>
           <div style="font-size:10px;color:${SUBBG[state]}">${icon}${label}</div>
         </div>
       </div>`;
@@ -2949,7 +3744,7 @@ function updateManquantsSummary() {
       <div class="mq-badge">⚠️</div>
       <div class="mq-info">
         <div class="mq-title">${r.codePremix}
-          <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px">${r.saveur || ''}${r.sac ? ' · Sac ' + r.sac : ''}</span>
+          <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px">${r.saveur || ''}${r.sac ? ' · Bac ' + r.sac : ''}</span>
         </div>
         <div class="mq-sub">Manquant : ${(r.manquants || []).join(', ')}</div>
       </div>
@@ -3110,7 +3905,7 @@ function savePremix() {
   const tr = document.createElement('tr');
   tr.setAttribute('data-code', code);
   tr.innerHTML = `<td><b>${code}</b>${hasMq ? ' <span class="tag" style="background:#fbe8e2;color:#d44218">⚠️ manquants</span>' : ''}</td>
-    <td><b>${saveur}</b> · Sac ${sac}</td>
+    <td><b>${saveur}</b> · Bac ${sac}</td>
     <td>${nom}</td>
     <td>${bls.map(f=>`<span class="tag tag-o">${f}</span>`).join(' ')}</td>
     <td><span class="status ${hasMq?'s-warn':'s-ok'}">${hasMq?'Incomplet':'Disponible'}</span></td>
@@ -3209,6 +4004,7 @@ async function saveProduction() {
       } else {
         stockLocal.push({ code, saveur, big, small });
       }
+      localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
 
       // Sauvegarder dans localStorage
       const storedProd = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
@@ -3236,6 +4032,7 @@ async function saveProduction() {
       updateLotsduJour();
       updateCalendrierProduction();
       marquerSacVide(pmx); // Marquer le sac premix utilisé comme vide dans l'inventaire
+      deduireIngredientsProduction(pmx); // Déduire les ingrédients de la recette du stock
 
       resetProd();
     } else toast('prod','❌ '+(json.error||'Erreur'),'err');
@@ -3261,14 +4058,13 @@ async function saveReception() {
     await saveCorrespondance(numero, factureOdoo, fournisseur, true);
   }
 
-  // Envoi API Réception
   try {
     const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'reception', fournisseur, numero, nom, date, factureOdoo }) });
     const json = await res.json();
     if (json.success) {
       toast('rec', factureOdoo ? '✓ BL réceptionné + facture liée automatiquement !' : '✓ BL réceptionné !', 'ok');
     } else {
-      toast('rec', '✓ BL enregistré en local (Google Sheets : ' + (json?.error || 'non disponible') + ')', 'ok');
+      toast('rec', '✓ BL enregistré en local', 'ok');
     }
   } catch {
     toast('rec', '✓ BL enregistré en local (hors ligne)', 'ok');
@@ -4063,18 +4859,33 @@ async function loadAllData() {
 
 // ── Stock ──
 function applyStock(data) {
-  if (!Array.isArray(data) || !data.length) return;
-
   // Filtrer : garder uniquement les vrais lots (saveur = string, code contient un tiret)
-  const lots = data.filter(r => r.code && typeof r.saveur === 'string' && r.saveur && r.code.includes('-'));
+  const lots = Array.isArray(data)
+    ? data.filter(r => r.code && typeof r.saveur === 'string' && r.saveur && r.code.includes('-'))
+    : [];
 
-  // Remplacer stockLocal
+  // Sécurité : si l'API renvoie 0 lot valide, on charge depuis localStorage plutôt que de tout vider
+  if (!lots.length) {
+    const saved = JSON.parse(localStorage.getItem('kooki_stock_local') || '[]');
+    if (saved.length) {
+      stockLocal.length = 0;
+      saved.forEach(l => stockLocal.push(l));
+      updateStockPage();
+      updateDashboardStockTable();
+    }
+    return;
+  }
+
+  // Remplacer stockLocal uniquement si l'API retourne de vrais lots
   stockLocal.length = 0;
   lots.forEach(r => {
     if (r.big > 0 || r.small > 0) {
       stockLocal.push({ code: r.code, saveur: r.saveur, big: r.big || 0, small: r.small || 0 });
     }
   });
+
+  // Sauvegarder dans localStorage (survie au refresh + fallback si API vide)
+  localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
 
   updateStockPage();
   updateDashboardStockTable();
@@ -4198,7 +5009,7 @@ function applyPremix(data) {
     tbody.innerHTML = '';
     source.forEach(r => {
       const facs = (r.factures || []).map(f => `<span class="tag tag-o">${f}</span>`).join(' ') || '—';
-      const savSac = r.saveur ? `<b>${r.saveur}</b> · Sac ${r.sac||'?'}` : '—';
+      const savSac = r.saveur ? `<b>${r.saveur}</b> · Bac ${r.sac||'?'}` : '—';
       // Déterminer statut depuis inventaire
       const inv = getInventairePremix();
       const sacData = r.saveur && r.sac ? inv[r.saveur]?.[r.sac] : null;
@@ -4299,7 +5110,36 @@ function applyManquants(data) {
 // ─────────────────────────────────────
 // INIT
 // ─────────────────────────────────────
+// ── STOCK INITIAL (chargé une seule fois si localStorage vide) ──
+const STOCK_INITIAL = [
+  { code:'BEN-260527',    saveur:'BENNY',  big:115, small:0   },
+  { code:'BEN-260607-05', saveur:'BENNY',  big:125, small:70  },
+  { code:'CHA-260603',    saveur:'CHARLY', big:115, small:0   },
+  { code:'DAV-260527-04', saveur:'DAVY',   big:108, small:0   },
+  { code:'EMM-260603-05', saveur:'EMMY',   big:312, small:198 },
+  { code:'JAC-260603-01', saveur:'JACKY',  big:171, small:108 },
+  { code:'LEN-260523-03', saveur:'LENI',   big:118, small:0   },
+  { code:'MOL-260607-02', saveur:'MOLLY',  big:159, small:73  },
+  { code:'SUZ-260527-01', saveur:'SUZZY',  big:129, small:191 },
+  { code:'SUZ-260607-00', saveur:'SUZZY',  big:167, small:74  },
+  { code:'WAL-260521-01', saveur:'WALLY',  big:6,   small:0   },
+  { code:'WAL-260607-04', saveur:'WALLY',  big:156, small:70  },
+  { code:'WOO-260603-03', saveur:'WOODY',  big:64,  small:30  },
+  { code:'WOO-260607-01', saveur:'WOODY',  big:155, small:77  },
+];
+
+function chargerStockInitial() {
+  // Version du stock — changer ce numéro force le rechargement
+  const VERSION = '2026-06-07-v1';
+  if (localStorage.getItem('kooki_stock_version') !== VERSION) {
+    localStorage.setItem('kooki_stock_local', JSON.stringify(STOCK_INITIAL));
+    localStorage.setItem('kooki_stock_version', VERSION);
+  }
+}
+
 function loginAs(name) {
+  // Charger le stock initial si localStorage est vide
+  chargerStockInitial();
   // Cacher l'écran de connexion
   document.getElementById('login-screen').style.display = 'none';
   // Appliquer le profil sélectionné
