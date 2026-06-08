@@ -5391,6 +5391,9 @@ function applyProduction(data) {
   const localCodes = new Set(localFiltered.map(r => r.code));
   const merged = [...localFiltered, ...apiData.filter(r => r.code !== '—' && !localCodes.has(r.code) && !deletedCodes.has(r.code))];
 
+  // Synchroniser le localStorage avec les données Google Sheets pour que le récapitulatif fonctionne sur tous les appareils
+  localStorage.setItem('kooki_productions', JSON.stringify(merged));
+
   const tbody = document.getElementById('prod-table');
   if (!tbody) return;
 
@@ -5427,7 +5430,12 @@ function applyProduction(data) {
 // ── Premix ──
 function applyPremix(data) {
   const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
-  const source = local.length ? local : (Array.isArray(data) ? data : []);
+  const apiData = Array.isArray(data) ? data : [];
+  // Fusionner local + API sans doublons, et synchroniser dans localStorage
+  const localCodes = new Set(local.map(r => r.codePremix));
+  const merged = [...local, ...apiData.filter(r => r.codePremix && !localCodes.has(r.codePremix))];
+  if (merged.length) localStorage.setItem('kooki_premix', JSON.stringify(merged));
+  const source = merged;
   const tbody = document.getElementById('pmx-table');
   if (!tbody) return;
 
