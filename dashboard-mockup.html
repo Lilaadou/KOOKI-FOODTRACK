@@ -5374,7 +5374,7 @@ function supprimerLivraison(idx) {
 
 function applyProduction(data) {
   // Normaliser les données venant de Google Sheets
-  // Format attendu depuis l'onglet "Production" (ligne 72+) :
+  // Format attendu depuis l'onglet "Production" (ligne 2+) :
   // { saveur, codePremix, code (ou codeLot), big (ou bigSize), small (ou babySize), nom (ou producteur), date }
   const normalise = r => ({
     code:    r.code      || r.codeLot      || r.lot        || '—',
@@ -5384,6 +5384,7 @@ function applyProduction(data) {
     small:   parseInt(r.small || r.babySize  || r.qtySmall || 0),
     nom:     r.nom       || r.producteur    || r.producer   || '—',
     date:    r.date      || null,
+    bls:     Array.isArray(r.bls) ? r.bls : (r.factures ? (Array.isArray(r.factures) ? r.factures : String(r.factures).split(',').map(s=>s.trim()).filter(Boolean)) : []),
   });
 
   const apiData  = Array.isArray(data) ? data.map(normalise) : [];
