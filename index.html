@@ -5291,12 +5291,20 @@ function applySorties(data) {
 
 function supprimerProduction(code) {
   if (!confirm('Supprimer la production ' + code + ' ?\nAttention : le stock cookies NE sera pas modifié automatiquement.')) return;
+
+  // 1. Supprimer du localStorage
   const stored = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
-  const filtered = stored.filter(r => r.code !== code);
-  localStorage.setItem('kooki_productions', JSON.stringify(filtered));
-  // Retirer la ligne du DOM
+  localStorage.setItem('kooki_productions', JSON.stringify(stored.filter(r => r.code !== code)));
+
+  // 2. Garder une liste noire pour que les données Google Sheets ne fassent pas réapparaître la ligne
+  const deleted = JSON.parse(localStorage.getItem('kooki_productions_deleted') || '[]');
+  if (!deleted.includes(code)) deleted.push(code);
+  localStorage.setItem('kooki_productions_deleted', JSON.stringify(deleted));
+
+  // 3. Retirer la ligne du DOM avec animation
   const row = document.querySelector('[data-prod-code="' + code + '"]');
   if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; setTimeout(() => row.remove(), 300); }
+
   buildProdByProducer();
   if (document.getElementById('prod-bar-chart')) drawProdChart();
 }
@@ -5355,9 +5363,12 @@ function applyProduction(data) {
 
   const apiData  = Array.isArray(data) ? data.map(normalise) : [];
   const local    = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const deletedCodes = new Set(JSON.parse(localStorage.getItem('kooki_productions_deleted') || '[]'));
   // Fusionner : localStorage en premier, puis les entrées API qui n'y sont pas déjà
-  const localCodes = new Set(local.map(r => r.code));
-  const merged = [...local, ...apiData.filter(r => r.code !== '—' && !localCodes.has(r.code))];
+  // Les codes supprimés sont exclus des deux sources
+  const localFiltered = local.filter(r => !deletedCodes.has(r.code));
+  const localCodes = new Set(localFiltered.map(r => r.code));
+  const merged = [...localFiltered, ...apiData.filter(r => r.code !== '—' && !localCodes.has(r.code) && !deletedCodes.has(r.code))];
 
   const tbody = document.getElementById('prod-table');
   if (!tbody) return;
