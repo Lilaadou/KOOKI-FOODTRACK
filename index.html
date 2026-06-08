@@ -49,6 +49,8 @@
     .search-item-title{font-size:13px;font-weight:600;}
     .search-item-sub{font-size:11px;color:#888;margin-top:2px;}
     .search-empty{padding:16px;text-align:center;color:#aaa;font-size:13px;}
+    @keyframes search-highlight{0%{background:#fbe8e2;box-shadow:0 0 0 3px #d44218;}60%{background:#fbe8e2;}100%{background:transparent;box-shadow:none;}}
+    .search-highlight{animation:search-highlight 1.8s ease forwards;border-radius:8px;}
 
     .bell{width:34px;height:34px;background:#fff;border:1px solid #efefef;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;position:relative;}
     .bell-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;background:#d44218;border-radius:50%;border:1.5px solid #fff;}
@@ -293,6 +295,19 @@
     .sac-status.nok{color:#d44218;}
     .sac-manquant{font-size:11px;color:#d44218;margin-top:3px;}
 
+    /* ── PDF DOCUMENTS ── */
+    .pdf-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:#f9f9f9;border:1px solid #f0f0f0;margin-bottom:8px;transition:background .15s;}
+    .pdf-item:hover{background:#fdf0ec;}
+    .pdf-icon{width:36px;height:36px;border-radius:9px;background:#fbe8e2;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .pdf-name{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pdf-meta{font-size:11px;color:#aaa;margin-top:2px;}
+    .pdf-actions{display:flex;gap:6px;flex-shrink:0;}
+    .pdf-btn{padding:5px 11px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+    .pdf-btn:hover{opacity:.8;}
+    .pdf-btn-dl{background:#e0edf8;color:#0662aa;}
+    .pdf-btn-print{background:#fbe8e2;color:#d44218;}
+    .pdf-btn-del{background:#f0f0f0;color:#aaa;}
+
     @media print{ body{ display:none; } }
 
     /* ── TABLETTE ── */
@@ -433,7 +448,14 @@
       #bottom-nav{ display:none; }
       #sidebar-overlay{ display:none !important; }
     }
+  /* ── IMPRESSION FACTURES ── */
+  @media print {
+    body * { visibility: hidden !important; }
+    #print-factures-zone, #print-factures-zone * { visibility: visible !important; }
+    #print-factures-zone { position: fixed; inset: 0; padding: 28px 32px; background: #fff; font-family: 'Segoe UI', sans-serif; font-size: 12px; }
+  }
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -749,8 +771,8 @@
         <thead><tr><th>Code Lot</th><th>Saveur</th><th>Big</th><th>Small</th><th>Premix</th><th>Producteur</th><th>Statut</th></tr></thead>
         <tbody>
           <tr><td><b>SUZ-260605-03</b><div class="sub-text">05/06</div></td><td><span class="tag tag-o">SUZZY</span></td><td style="color:#d44218;font-weight:700">300</td><td>5</td><td class="sub-text">PMX-260605-02</td><td>Alexandre</td><td><span class="status s-ok">En stock</span></td></tr>
-          <tr><td><b>WOO-260606-01</b><div class="sub-text">06/06</div></td><td><span class="tag tag-b">WOODY</span></td><td style="color:#0662aa;font-weight:700">200</td><td>65</td><td class="sub-text">PMX-260606-04</td><td>Alexandre</td><td><span class="status s-ok">En stock</span></td></tr>
-          <tr><td><b>WOO-260605-01</b><div class="sub-text">05/06</div></td><td><span class="tag tag-b">WOODY</span></td><td style="color:#0662aa;font-weight:700">135</td><td>0</td><td class="sub-text">PMX-260605-02</td><td>David</td><td><span class="status s-ok">En stock</span></td></tr>
+          <tr><td><b>WOO-260606-01</b><div class="sub-text">06/06</div></td><td><span class="tag tag-o">WOODY</span></td><td style="color:#d44218;font-weight:700">200</td><td>65</td><td class="sub-text">PMX-260606-04</td><td>Alexandre</td><td><span class="status s-ok">En stock</span></td></tr>
+          <tr><td><b>WOO-260605-01</b><div class="sub-text">05/06</div></td><td><span class="tag tag-o">WOODY</span></td><td style="color:#d44218;font-weight:700">135</td><td>0</td><td class="sub-text">PMX-260605-02</td><td>David</td><td><span class="status s-ok">En stock</span></td></tr>
           <tr><td><b>JAC-260606-01</b><div class="sub-text">06/06</div></td><td><span class="tag tag-o">JACKY</span></td><td style="color:#d44218;font-weight:700">135</td><td>30</td><td class="sub-text">PMX-260606-02</td><td>Alexandre</td><td><span class="status s-ok">En stock</span></td></tr>
           <tr><td><b>BEN-260606-01</b><div class="sub-text">06/06</div></td><td><span class="tag tag-o">BENNY</span></td><td style="color:#d44218;font-weight:700">135</td><td>30</td><td class="sub-text">PMX-260606-03</td><td>Alexandre</td><td><span class="status s-ok">En stock</span></td></tr>
           <tr><td><b>DAV-260606-01</b><div class="sub-text">06/06</div></td><td><span class="tag tag-o">DAVY</span></td><td style="color:#d44218;font-weight:700">135</td><td>60</td><td class="sub-text">PMX-260606-05</td><td>—</td><td><span class="status s-ok">En stock</span></td></tr>
@@ -968,7 +990,7 @@
     <div class="card">
       <div class="card-header"><div><div class="card-title">Historique de production</div></div></div>
       <table>
-        <thead><tr><th>Code Lot</th><th>Saveur</th><th>Big</th><th>Small</th><th>Stock Big</th><th>Stock Small</th><th>Premix</th><th>Producteur</th></tr></thead>
+        <thead><tr><th>Code Lot</th><th>Saveur</th><th>Big</th><th>Small</th><th>Stock Big</th><th>Stock Small</th><th>Premix</th><th>Producteur</th><th></th></tr></thead>
         <tbody id="prod-table">
           <tr><td colspan="8" class="empty">Chargement…</td></tr>
         </tbody>
@@ -1011,10 +1033,10 @@
             <tr class="stock-lot-row"><td>SUZ-260605-03</td><td class="sub-text">05/06/2026</td><td><b>300</b></td><td>5</td></tr>
             <tr class="stock-total-row"><td colspan="2">Total SUZZY</td><td style="color:#d44218"><b>425 Big</b></td><td style="color:#0662aa"><b>5 Small</b></td></tr>
 
-            <tr class="stock-header-row"><td colspan="2"><span class="tag tag-b">WOODY</span></td><td style="color:#0662aa">335</td><td>65</td></tr>
+            <tr class="stock-header-row"><td colspan="2"><span class="tag tag-o">WOODY</span></td><td style="color:#d44218">335</td><td>65</td></tr>
             <tr class="stock-lot-row"><td>WOO-260605-01</td><td class="sub-text">05/06/2026</td><td><b>135</b></td><td>0</td></tr>
             <tr class="stock-lot-row"><td>WOO-260606-01</td><td class="sub-text">06/06/2026</td><td><b>200</b></td><td>65</td></tr>
-            <tr class="stock-total-row"><td colspan="2">Total WOODY</td><td style="color:#0662aa"><b>335 Big</b></td><td style="color:#0662aa"><b>65 Small</b></td></tr>
+            <tr class="stock-total-row"><td colspan="2">Total WOODY</td><td style="color:#d44218"><b>335 Big</b></td><td style="color:#d44218"><b>65 Small</b></td></tr>
           </tbody>
         </table>
       </div>
@@ -1180,17 +1202,30 @@
       </div>
     </div>
 
+    <!-- Récapitulatif semaine B2B -->
+    <div class="card" style="margin-top:18px">
+      <div class="card-header" style="flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="card-title">📊 Récapitulatif semaine B2B</div>
+          <div class="card-sub" id="recap-b2b-periode">Livraisons de la semaine en cours</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="recapB2bSemainePrecedente()">◀ Semaine préc.</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 12px" onclick="recapB2bSemaineActuelle()">Semaine actuelle</button>
+        </div>
+      </div>
+      <div id="recap-b2b-content">
+        <div class="empty" style="padding:16px">Aucune livraison B2B cette semaine.</div>
+      </div>
+    </div>
+
     <!-- Historique sorties -->
-    <div class="card">
+    <div class="card" style="margin-top:18px">
       <div class="card-header"><div><div class="card-title">Historique des sorties frigo</div><div class="card-sub">7 derniers jours</div></div></div>
       <table>
-        <thead><tr><th>Date</th><th>Saveur</th><th>Client / Destination</th><th>Lot</th><th>Big</th><th>Small</th><th>Boîtes</th><th>Livré par</th></tr></thead>
+        <thead><tr><th>Date</th><th>Saveur</th><th>Client / Destination</th><th>Lot</th><th>Big</th><th>Small</th><th>Boîtes</th><th>Livré par</th><th></th></tr></thead>
         <tbody id="sortie-history">
-          <tr><td class="sub-text">06/06 19:56</td><td><span class="tag tag-o">SUZZY</span></td><td>Coffee Nomad</td><td>SUZ-260605-03</td><td>0</td><td>10</td><td>2</td><td>Alexandre M.</td></tr>
-          <tr><td class="sub-text">06/06 14:40</td><td><span class="tag tag-o">SUZ+JAC+BEN+WOO</span></td><td>Café Moka</td><td>Multi-lots</td><td>0</td><td>40</td><td>8</td><td>Alexandre M.</td></tr>
-          <tr><td class="sub-text">05/06 20:57</td><td><span class="tag tag-o">SUZZY</span></td><td>Magasin Ixelles</td><td>SUZ-260604-01</td><td>100</td><td>90</td><td>—</td><td>Alexandre M.</td></tr>
-          <tr><td class="sub-text">05/06 12:55</td><td><span class="tag tag-o">SUZZY</span></td><td>Magasin Ixelles</td><td>SUZ-260605-01</td><td>90</td><td>0</td><td>—</td><td>David C.</td></tr>
-          <tr><td class="sub-text">05/06 11:33</td><td><span class="tag tag-o">JACKY</span></td><td>Boulangerie Saint-Gilles</td><td>JAC-260606-01</td><td>0</td><td>20</td><td>4</td><td>David C.</td></tr>
+          <tr><td colspan="9" class="empty">Chargement…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1233,15 +1268,20 @@
           </div>
           <div>
             <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Livré par</div>
-            <div id="bon-livreur" style="font-size:14px;font-weight:600"></div>
+            <div style="font-size:13px;font-weight:700;color:#1a1a2e">KOOKI COMPANY SRL</div>
+            <div style="font-size:11px;color:#888;line-height:1.6;margin-top:2px">
+              Avenue Emile Gryson 2D · 1070 Bruxelles<br>
+              anderlecht@kooki.be · 0492 80 10 38<br>
+              N° TVA : BE1015746980
+            </div>
           </div>
         </div>
 
         <!-- Détail produits -->
         <div style="margin-bottom:20px">
           <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Détail de la livraison</div>
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            <thead>
+          <table style="width:100%;border-collapse:collapse;font-size:13px" id="bon-lots-table">
+            <thead id="bon-lots-head">
               <tr style="background:#f7f8fa">
                 <th style="padding:8px 10px;text-align:left;font-size:11px;color:#888;font-weight:600;border-radius:6px 0 0 6px">Code lot</th>
                 <th style="padding:8px 10px;text-align:left;font-size:11px;color:#888;font-weight:600">Saveur</th>
@@ -1253,59 +1293,18 @@
           </table>
         </div>
 
-        <!-- Totaux + boîtes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
-          <div style="background:#fbe8e2;border-radius:10px;padding:12px 16px">
-            <div style="font-size:10px;font-weight:700;color:#d44218;text-transform:uppercase;margin-bottom:2px">Total Big (165g)</div>
-            <div id="bon-total-big" style="font-size:22px;font-weight:700;color:#d44218"></div>
-          </div>
-          <div style="background:#e0edf8;border-radius:10px;padding:12px 16px">
-            <div style="font-size:10px;font-weight:700;color:#0662aa;text-transform:uppercase;margin-bottom:2px">Total Small (80g)</div>
-            <div id="bon-total-small" style="font-size:22px;font-weight:700;color:#0662aa"></div>
-          </div>
-        </div>
+        <!-- Totaux -->
+        <div id="bon-totaux-section" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap"></div>
 
-        <!-- Boîtes plastiques -->
-        <div id="bon-boites-section" style="background:#f7f8fa;border-radius:10px;padding:14px 16px;margin-bottom:24px">
-          <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">📦 Boîtes plastiques envoyées</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-            <div style="background:#fbe8e2;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:10px;font-weight:700;color:#d44218;text-transform:uppercase">Big (165g)</div>
-                <div style="font-size:10px;color:#888;margin-top:1px">1 boîte = 12 cookies</div>
-              </div>
-              <div id="bon-boites-big" style="font-size:26px;font-weight:700;color:#d44218">0</div>
-            </div>
-            <div style="background:#e0edf8;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:10px;font-weight:700;color:#0662aa;text-transform:uppercase">Small (80g)</div>
-                <div style="font-size:10px;color:#888;margin-top:1px">1 boîte = 25 cookies</div>
-              </div>
-              <div id="bon-boites-small" style="font-size:26px;font-weight:700;color:#0662aa">0</div>
-            </div>
-          </div>
-          <div style="padding-top:10px;border-top:1px dashed #e0e0e0;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;color:#aaa">
-            <span>Boîtes retournées ce jour : ___________</span>
-            <span>Solde après livraison : ___________</span>
-          </div>
-        </div>
+        <!-- Boîtes -->
+        <div id="bon-boites-section" style="display:none;background:#f7f8fa;border-radius:10px;padding:14px 16px;margin-bottom:24px"></div>
 
-        <!-- Signatures -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div style="border-top:1.5px solid #e0e0e0;padding-top:10px">
-            <div style="font-size:11px;color:#aaa;margin-bottom:4px">Signature livreur</div>
-            <div style="height:50px"></div>
-            <div style="font-size:11px;color:#1a1a2e;font-weight:600" id="bon-sig-livreur"></div>
-          </div>
-          <div style="border-top:1.5px solid #e0e0e0;padding-top:10px">
-            <div style="font-size:11px;color:#aaa;margin-bottom:4px">Signature client / réception</div>
-            <div style="height:50px"></div>
-            <div style="font-size:11px;color:#aaa">Nom : ___________________________</div>
-          </div>
-        </div>
 
-        <div style="text-align:center;margin-top:20px;font-size:10px;color:#ccc">
-          Kooki — Livraison artisanale de cookies · Merci de votre confiance 🍪
+
+        <!-- Footer bon de livraison -->
+        <div style="border-top:1.5px solid #f0f0f0;margin-top:24px;padding-top:18px;display:flex;flex-direction:column;align-items:center;gap:8px">
+          <img src="LOGO K Kooki png.png" alt="Kooki" style="height:48px;opacity:.9">
+          <div style="font-size:12px;color:#aaa;font-style:italic;letter-spacing:.03em">Handmade with Love in BXL ❤️</div>
         </div>
       </div>
     </div>
@@ -1364,7 +1363,7 @@
       <div class="card" style="margin-bottom:18px">
         <div class="card-header"><div><div class="card-title">📋 Historique des consommations</div><div class="card-sub">Déductions après fabrication des bacs</div></div></div>
         <table>
-          <thead><tr><th>Date</th><th>Référence</th><th>Ingrédients déduits</th></tr></thead>
+          <thead><tr><th>Date</th><th>Référence</th><th>Ingrédients déduits</th><th></th></tr></thead>
           <tbody id="conso-historique-table">
             <tr><td colspan="3" class="empty">Aucune consommation enregistrée.</td></tr>
           </tbody>
@@ -1405,7 +1404,7 @@
           <div><div class="card-title">📋 Historique des livraisons</div><div class="card-sub">Date et N° BL</div></div>
         </div>
         <table>
-          <thead><tr><th>Date</th><th>N° BL</th><th>Fournisseur</th></tr></thead>
+          <thead><tr><th>Date</th><th>N° BL</th><th>Fournisseur</th><th></th></tr></thead>
           <tbody id="ing-historique-table">
             <tr><td colspan="3" class="empty">Aucune livraison enregistrée.</td></tr>
           </tbody>
@@ -1432,7 +1431,7 @@
       <!-- Formulaire commande en bacs -->
       <div class="card">
         <div class="card-header">
-          <div><div class="card-title">📋 Passer une commande</div><div class="card-sub">1 bac blanc = 40 cookies (Big + Small)</div></div>
+          <div><div class="card-title">📋 Passer une commande</div><div class="card-sub">1 bac blanc = 40 Big cookies (165g)</div></div>
         </div>
 
         <!-- En-tête colonnes -->
@@ -1448,7 +1447,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;background:#f0f7f0;border-radius:10px;padding:12px 16px;margin-top:12px">
           <div>
             <div style="font-size:13px;font-weight:700;color:#1a7a3a">🗃️ Total bacs blancs</div>
-            <div style="font-size:11px;color:#888;margin-top:1px">1 bac = 40 cookies max</div>
+            <div style="font-size:11px;color:#888;margin-top:1px">1 bac = 40 Big (165g)</div>
           </div>
           <div style="font-size:28px;font-weight:700;color:#1a7a3a" id="ixelles-boites-preview">0</div>
         </div>
@@ -1526,10 +1525,54 @@
         <tbody id="rec-table"><tr><td colspan="5" class="empty">Aucune réception ce mois-ci.</td></tr></tbody>
       </table>
     </div>
+
+    <!-- Documents PDF -->
+    <div class="card" style="margin-top:18px">
+      <div class="card-header">
+        <div><div class="card-title">📄 Documents (PDF)</div><div class="card-sub">Commandes, bons de livraison, factures fournisseurs</div></div>
+      </div>
+
+      <!-- Zone de dépôt -->
+      <div id="pdf-drop-zone"
+        style="border:2px dashed #e0e0e0;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px"
+        onclick="document.getElementById('pdf-file-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='#d44218';this.style.background='#fdf0ec'"
+        ondragleave="this.style.borderColor='#e0e0e0';this.style.background=''"
+        ondrop="handlePdfDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px">📎</div>
+        <div style="font-size:13px;font-weight:700;color:#888">Glisse tes PDF ici ou clique pour sélectionner</div>
+        <div style="font-size:11px;color:#bbb;margin-top:4px">Formats acceptés : PDF · Taille max recommandée : 5 MB par fichier</div>
+        <input type="file" id="pdf-file-input" accept=".pdf" multiple style="display:none" onchange="handlePdfSelect(this.files)">
+      </div>
+
+      <!-- Liste des documents -->
+      <div id="pdf-list">
+        <div class="empty" style="padding:12px">Aucun document importé.</div>
+      </div>
+    </div>
   </div>
 
   <!-- ══════════════════ FACTURES ══════════════════ -->
   <div id="page-factures" class="page">
+
+    <!-- ── RECHERCHE TRAÇABILITÉ AFSCA ── -->
+    <div class="card" style="margin-bottom:18px">
+      <div class="card-header" style="margin-bottom:14px">
+        <div>
+          <div class="card-title">🔎 Recherche traçabilité</div>
+          <div class="card-sub">Lot de production, code Premix ou N° Facture</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input id="traca-input" type="text" placeholder="Ex : SUZ-260606-01  ou  PMX-260606-02  ou  FAC-2026-001"
+          style="flex:1;min-width:220px;padding:10px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;outline:none;font-family:inherit"
+          onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'"
+          oninput="tracaSearch(this.value)" onkeydown="if(event.key==='Enter')tracaSearch(this.value)">
+        <button class="btn btn-primary" onclick="tracaSearch(document.getElementById('traca-input').value)" style="padding:10px 18px">Rechercher</button>
+        <button class="btn btn-secondary" onclick="tracaPrint()" id="traca-print-btn" style="padding:10px 14px;display:none">🖨️ Imprimer fiche</button>
+      </div>
+      <div id="traca-result" style="margin-top:16px"></div>
+    </div>
 
     <div class="card">
       <div class="card-header" style="flex-wrap:wrap;gap:8px">
@@ -1537,7 +1580,11 @@
           <div class="card-title">🧾 Récapitulatif par lot de production</div>
           <div class="card-sub">Codes, producteurs et factures associées</div>
         </div>
-        <button class="btn btn-secondary" onclick="buildFacturesRecap()" style="font-size:11px;padding:5px 12px">🔄 Actualiser</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="buildFacturesRecap()" style="font-size:11px;padding:5px 12px">🔄 Actualiser</button>
+          <button class="btn btn-secondary" onclick="exportFacturesExcel()" style="font-size:11px;padding:5px 12px;background:#e8f5e9;color:#1a7a3a">⬇️ Excel</button>
+          <button class="btn btn-secondary" onclick="imprimerFactures()" style="font-size:11px;padding:5px 12px;background:#e0edf8;color:#0662aa">🖨️ Imprimer</button>
+        </div>
       </div>
       <div style="overflow-x:auto">
         <table>
@@ -1557,6 +1604,9 @@
         </table>
       </div>
     </div>
+
+    <!-- Zone impression (invisible à l'écran, visible à l'impression) -->
+    <div id="print-factures-zone" style="display:none"></div>
 
     <!-- Éléments cachés conservés pour la compatibilité interne -->
     <div style="display:none">
@@ -1703,7 +1753,8 @@ function showPage(name, btn) {
   document.getElementById('page-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = titles[name] || name;
-  if (name === 'reception') loadRecentInvoices();
+  if (name === 'reception') { loadRecentInvoices(); renderPdfList(); }
+  if (name === 'frigo') setTimeout(() => { renderRecapB2b(currentRecapOffset); }, 60);
   if (name === 'factures') setTimeout(() => { loadCorrespondances(); }, 60);
   if (name === 'premix' || name === 'production') refreshFactureLists();
   if (name === 'dashboard') setTimeout(() => { drawChart(currentChartMode); updateDashboardIxellesBanner(); updateDashboardBacsVides(); updateDashboardMiniCal(); }, 60);
@@ -1718,25 +1769,25 @@ function showPage(name, btn) {
 // ─────────────────────────────────────
 const SEARCH_DB = [
   // Lots de production
-  { cat:'Production', icon:'🏭', ref:'SUZ-260605-03', detail:'SUZZY · PMX-260605-02 · Alexandre Michel', page:'production' },
-  { cat:'Production', icon:'🏭', ref:'SUZ-260605-01', detail:'SUZZY · PMX-260605-01 · David Cohenca',    page:'production' },
-  { cat:'Production', icon:'🏭', ref:'WOO-260606-01', detail:'WOODY · PMX-260606-04 · Alexandre Michel', page:'production' },
-  { cat:'Production', icon:'🏭', ref:'WOO-260605-01', detail:'WOODY · PMX-260605-02 · David Cohenca',    page:'production' },
-  { cat:'Production', icon:'🏭', ref:'JAC-260606-01', detail:'JACKY · PMX-260606-02 · Alexandre Michel', page:'production' },
-  { cat:'Production', icon:'🏭', ref:'BEN-260606-01', detail:'BENNY · PMX-260606-03 · Alexandre Michel', page:'production' },
-  { cat:'Production', icon:'🏭', ref:'DAV-260606-01', detail:'DAVY  · PMX-260606-05',                    page:'production' },
+  { cat:'Production', icon:'🏭', ref:'SUZ-260605-03', detail:'SUZZY · PMX-260605-02 · Alexandre Michel', page:'stock',   anchor:'.stock-lot-row[data-ref="SUZ-260605-03"]' },
+  { cat:'Production', icon:'🏭', ref:'SUZ-260605-01', detail:'SUZZY · PMX-260605-01 · David Cohenca',    page:'stock',   anchor:'.stock-lot-row[data-ref="SUZ-260605-01"]' },
+  { cat:'Production', icon:'🏭', ref:'WOO-260606-01', detail:'WOODY · PMX-260606-04 · Alexandre Michel', page:'stock',   anchor:'.stock-lot-row[data-ref="WOO-260606-01"]' },
+  { cat:'Production', icon:'🏭', ref:'WOO-260605-01', detail:'WOODY · PMX-260605-02 · David Cohenca',    page:'stock',   anchor:'.stock-lot-row[data-ref="WOO-260605-01"]' },
+  { cat:'Production', icon:'🏭', ref:'JAC-260606-01', detail:'JACKY · PMX-260606-02 · Alexandre Michel', page:'stock',   anchor:'.stock-lot-row[data-ref="JAC-260606-01"]' },
+  { cat:'Production', icon:'🏭', ref:'BEN-260606-01', detail:'BENNY · PMX-260606-03 · Alexandre Michel', page:'stock',   anchor:'.stock-lot-row[data-ref="BEN-260606-01"]' },
+  { cat:'Production', icon:'🏭', ref:'DAV-260606-01', detail:'DAVY  · PMX-260606-05',                    page:'stock',   anchor:'.stock-lot-row[data-ref="DAV-260606-01"]' },
   // Premix
-  { cat:'Premix', icon:'🥣', ref:'PMX-260606-04', detail:'WOODY · Alexandre Michel', page:'premix' },
-  { cat:'Premix', icon:'🥣', ref:'PMX-260606-03', detail:'BENNY · Alexandre Michel', page:'premix' },
-  { cat:'Premix', icon:'🥣', ref:'PMX-260606-02', detail:'JACKY · Alexandre Michel', page:'premix' },
-  { cat:'Premix', icon:'🥣', ref:'PMX-260605-02', detail:'WOODY/SUZZY · David Cohenca', page:'premix' },
-  { cat:'Premix', icon:'🥣', ref:'PMX-260605-01', detail:'SUZZY · David Cohenca',    page:'premix' },
+  { cat:'Premix', icon:'🥣', ref:'PMX-260606-04', detail:'WOODY · Alexandre Michel',    page:'premix', anchor:'#pmx-table tr[data-code="PMX-260606-04"]' },
+  { cat:'Premix', icon:'🥣', ref:'PMX-260606-03', detail:'BENNY · Alexandre Michel',    page:'premix', anchor:'#pmx-table tr[data-code="PMX-260606-03"]' },
+  { cat:'Premix', icon:'🥣', ref:'PMX-260606-02', detail:'JACKY · Alexandre Michel',    page:'premix', anchor:'#pmx-table tr[data-code="PMX-260606-02"]' },
+  { cat:'Premix', icon:'🥣', ref:'PMX-260605-02', detail:'WOODY/SUZZY · David Cohenca', page:'premix', anchor:'#pmx-table tr[data-code="PMX-260605-02"]' },
+  { cat:'Premix', icon:'🥣', ref:'PMX-260605-01', detail:'SUZZY · David Cohenca',       page:'premix', anchor:'#pmx-table tr[data-code="PMX-260605-01"]' },
   // Factures
-  { cat:'Facture', icon:'🧾', ref:'FAC-2026-001', detail:'Foodflow · lot SUZ-260605-01', page:'factures' },
-  { cat:'Facture', icon:'🧾', ref:'FAC-2026-002', detail:'Bruyerre · lot WOO-260605-01', page:'factures' },
-  { cat:'Facture', icon:'🧾', ref:'FAC-2026-005', detail:'Colruyt  · lot JAC-260606-01', page:'factures' },
-  { cat:'Facture', icon:'🧾', ref:'FAC-2026-006', detail:'Foodflow · lot BEN-260606-01', page:'factures' },
-  { cat:'Facture', icon:'🧾', ref:'FAC-2026-007', detail:'Bruyerre · lot WOO-260606-01', page:'factures' },
+  { cat:'Facture', icon:'🧾', ref:'FAC-2026-001', detail:'Foodflow · lot SUZ-260605-01', page:'factures', anchor:'#fac-table tr[data-ref="FAC-2026-001"]' },
+  { cat:'Facture', icon:'🧾', ref:'FAC-2026-002', detail:'Bruyerre · lot WOO-260605-01', page:'factures', anchor:'#fac-table tr[data-ref="FAC-2026-002"]' },
+  { cat:'Facture', icon:'🧾', ref:'FAC-2026-005', detail:'Colruyt  · lot JAC-260606-01', page:'factures', anchor:'#fac-table tr[data-ref="FAC-2026-005"]' },
+  { cat:'Facture', icon:'🧾', ref:'FAC-2026-006', detail:'Foodflow · lot BEN-260606-01', page:'factures', anchor:'#fac-table tr[data-ref="FAC-2026-006"]' },
+  { cat:'Facture', icon:'🧾', ref:'FAC-2026-007', detail:'Bruyerre · lot WOO-260606-01', page:'factures', anchor:'#fac-table tr[data-ref="FAC-2026-007"]' },
   // Employés
   { cat:'Employé', icon:'👤', ref:'Lila Doudou',      detail:'Administrateur',  page:'parametres' },
   { cat:'Employé', icon:'👤', ref:'Virginia Kunnen',   detail:'Patron',          page:'parametres' },
@@ -1820,22 +1871,37 @@ function doSearch(q) {
   if (!unique.length) {
     res.innerHTML = `<div class="search-empty">Aucun résultat pour « ${q} »</div>`;
   } else {
-    res.innerHTML = unique.map(h => `
-      <div class="search-item" onclick="searchNavigate('${h.page}')">
+    res.innerHTML = unique.map(h => {
+      const anchor = h.anchor ? h.anchor.replace(/'/g,"\\'") : '';
+      return `
+      <div class="search-item" onclick="searchNavigate('${h.page}','${anchor}')">
         <div class="search-item-title">
           <span style="display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;margin-right:6px;${CAT_STYLE[h.cat]||''}">${h.icon} ${h.cat}</span>
           <b>${h.ref}</b>
         </div>
         <div class="search-item-sub">${h.detail}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
   res.classList.add('open');
 }
 
-function searchNavigate(page) {
+function searchNavigate(page, anchor) {
   const btn = document.getElementById('nav-' + page);
   if (btn && !btn.classList.contains('hidden')) showPage(page, btn);
   closeSearch();
+  if (anchor) {
+    setTimeout(() => {
+      const el = document.querySelector(anchor);
+      if (el) {
+        el.scrollIntoView({ behavior:'smooth', block:'center' });
+        el.classList.remove('search-highlight');
+        void el.offsetWidth; // reflow pour relancer l'animation si déjà présente
+        el.classList.add('search-highlight');
+        el.addEventListener('animationend', () => el.classList.remove('search-highlight'), { once:true });
+      }
+    }, 120);
+  }
 }
 
 function closeSearch() {
@@ -1882,7 +1948,7 @@ function refreshFacTable() {
   if (!tbody) return;
   if (!facturesManuelles.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Aucune facture.</td></tr>'; return; }
   tbody.innerHTML = facturesManuelles.map(f => `
-    <tr>
+    <tr data-ref="${f.numero}">
       <td><b>${f.numero}</b></td>
       <td>${f.fournisseur}</td>
       <td>${f.codeProduction || '—'}</td>
@@ -2031,8 +2097,8 @@ function updateStockPage() {
     const isBlue = sav === 'WOODY';
     const totBig   = lots.reduce((s, l) => s + l.big,   0);
     const totSmall = lots.reduce((s, l) => s + l.small, 0);
-    const tagClass = isBlue ? 'tag-b' : 'tag-o';
-    const color    = isBlue ? '#0662aa' : '#d44218';
+    const tagClass = 'tag-o';
+    const color    = '#d44218';
 
     html += `<tr class="stock-header-row">
       <td colspan="2"><span class="tag ${tagClass}">${sav}</span></td>
@@ -2048,7 +2114,7 @@ function updateStockPage() {
         const yy = parts[1].slice(0,2), mm = parts[1].slice(2,4), dd = parts[1].slice(4,6);
         dateStr = `${dd}/${mm}/20${yy}`;
       }
-      html += `<tr class="stock-lot-row">
+      html += `<tr class="stock-lot-row" data-ref="${l.code}">
         <td>${l.code}</td>
         <td class="sub-text">${dateStr}</td>
         <td><b>${l.big}</b></td>
@@ -2069,7 +2135,16 @@ function updateStockPage() {
   const zeroGrid = document.querySelector('#page-stock .zero-grid');
   if (zeroGrid) {
     zeroGrid.innerHTML = SAVEURS_ZERO.length
-      ? SAVEURS_ZERO.map(s => `<div class="zero-card"><div class="zero-dot"></div><b>${s}</b></div>`).join('')
+      ? SAVEURS_ZERO.map(s => {
+          const bigStock   = stockLocal.filter(l => l.saveur === s).reduce((a, l) => a + l.big,   0);
+          const smallStock = stockLocal.filter(l => l.saveur === s).reduce((a, l) => a + l.small, 0);
+          const bigLabel   = bigStock   > 0 ? `<span style="font-size:10px;color:#d44218;font-weight:700">${bigStock} Big</span>` : `<span style="font-size:10px;color:#ccc">0 Big</span>`;
+          const smallLabel = smallStock > 0 ? `<span style="font-size:10px;color:#0662aa;font-weight:700">${smallStock} Small</span>` : `<span style="font-size:10px;color:#ccc">0 Small</span>`;
+          return `<div class="zero-card" style="flex-direction:column;align-items:flex-start;gap:3px">
+            <b>${s}</b>
+            <div style="display:flex;gap:8px">${bigLabel}${smallLabel}</div>
+          </div>`;
+        }).join('')
       : '<div style="padding:12px;color:#0662aa;font-size:13px;font-weight:600">✓ Toutes les saveurs sont en stock</div>';
   }
 }
@@ -2078,7 +2153,7 @@ function updateStockPage() {
 const SAVEUR_COLORS = {
   SUZZY:'#d44218', JACKY:'#d44218', BENNY:'#d44218', DAVY:'#d44218',
   MOLLY:'#d44218', WALLY:'#d44218', CHARLY:'#d44218', LENI:'#d44218',
-  EMMY:'#d44218', DANNY:'#d44218', WOODY:'#0662aa'
+  EMMY:'#d44218', DANNY:'#d44218', WOODY:'#d44218'
 };
 
 // ── Bacs à préparer (bacs vides dans l'inventaire) ──
@@ -2101,7 +2176,7 @@ function updateDashboardBacsVides() {
     + vides.map(({sav, num}) => {
       const isBlue = sav === 'WOODY';
       return '<div style="display:flex;align-items:center;gap:6px;background:#fdf0ec;border:1px solid #f5cbb8;border-radius:9px;padding:6px 10px">'
-        + '<span class="tag ' + (isBlue?'tag-b':'tag-o') + '" style="font-size:10px">' + sav + '</span>'
+        + '<span class="tag ' + ('tag-o') + '" style="font-size:10px">' + sav + '</span>'
         + '<span style="font-size:12px;font-weight:700;color:#d44218">Bac ' + num + '</span>'
         + '</div>';
     }).join('')
@@ -2131,7 +2206,7 @@ function updateDashboardMiniCal() {
   el.innerHTML = items.map(it =>
     '<div style="background:' + it.bgColor + ';border-radius:9px;padding:7px 9px;display:flex;flex-direction:column;gap:2px">'
     + '<div style="display:flex;align-items:center;justify-content:space-between">'
-    + '<span class="tag ' + (isBlueF(it.sav)?'tag-b':'tag-o') + '" style="font-size:10px">' + it.sav + '</span>'
+    + '<span class="tag ' + ('tag-o') + '" style="font-size:10px">' + it.sav + '</span>'
     + '<span style="font-size:9px;font-weight:700;color:' + it.txtColor + '">' + it.labelCourt + '</span>'
     + '</div>'
     + '<div style="font-size:11px;font-weight:700;color:' + it.txtColor + '">' + it.big + ' Big</div>'
@@ -2206,8 +2281,8 @@ function updateDashboardStockTable() {
 
   tbody.innerHTML = lotsEnStock.map(l => {
     const isBlue = l.saveur === 'WOODY';
-    const color  = isBlue ? '#0662aa' : '#d44218';
-    const tag    = isBlue ? 'tag-b' : 'tag-o';
+    const color  = '#d44218';
+    const tag    = 'tag-o';
     const parts  = l.code.split('-');
     let date = '';
     if (parts[1]?.length === 6) {
@@ -2506,73 +2581,67 @@ ${content}
 }
 
 function showBonLivraison({ client, saveur, lots, boites, typeBoite='plastique', livreur }) {
-  const now    = new Date();
+  const now     = new Date();
+  const dd      = ('0'+now.getDate()).slice(-2);
+  const mm      = ('0'+(now.getMonth()+1)).slice(-2);
+  const yyyy    = now.getFullYear();
   const dateStr = now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const num    = 'BL-' + now.getFullYear() + ('0'+(now.getMonth()+1)).slice(-2) + ('0'+now.getDate()).slice(-2) + '-' + Math.floor(Math.random()*900+100);
+
+  // Format BL : BL - DD/MM/YYYY
+  const num = 'BL - ' + dd + '/' + mm + '/' + yyyy;
 
   const clientInfo = B2B_CLIENTS[client] || {};
-  document.getElementById('bon-numero').textContent  = num;
-  document.getElementById('bon-date').textContent    = dateStr;
-  document.getElementById('bon-client').textContent  = client;
+  document.getElementById('bon-numero').textContent = num;
+  document.getElementById('bon-date').textContent   = dateStr;
+  document.getElementById('bon-client').textContent = client;
   document.getElementById('bon-client-adresse').textContent = clientInfo.adresse || '';
-  document.getElementById('bon-client-contact').textContent = clientInfo.contact ? `👤 ${clientInfo.contact}  📞 ${clientInfo.tel}` : '';
-  document.getElementById('bon-livreur').textContent = livreur;
-  document.getElementById('bon-sig-livreur').textContent = livreur;
+  document.getElementById('bon-client-contact').textContent = clientInfo.contact ? '👤 ' + clientInfo.contact + '  📞 ' + clientInfo.tel : '';
 
+  // Tableau des lots : masquer les colonnes à 0
   let totalBig = 0, totalSmall = 0;
+  lots.forEach(l => { totalBig += l.big || 0; totalSmall += l.small || 0; });
+  const showBig   = totalBig   > 0;
+  const showSmall = totalSmall > 0;
+
+  // Mettre à jour le header en fonction des colonnes réelles
+  const bonHead = document.getElementById('bon-lots-head');
+  if (bonHead) {
+    bonHead.innerHTML = '<tr style="background:#f7f8fa">'
+      + '<th style="padding:8px 10px;text-align:left;font-size:11px;color:#888;font-weight:600;border-radius:6px 0 0 6px">Code lot</th>'
+      + '<th style="padding:8px 10px;text-align:left;font-size:11px;color:#888;font-weight:600">Saveur</th>'
+      + (showBig   ? '<th style="padding:8px 10px;text-align:center;font-size:11px;color:#d44218;font-weight:600">Big (165g)</th>'   : '')
+      + (showSmall ? '<th style="padding:8px 10px;text-align:center;font-size:11px;color:#0662aa;font-weight:600;border-radius:0 6px 6px 0">Small (80g)</th>' : '')
+      + '</tr>';
+  }
+
   document.getElementById('bon-lots-body').innerHTML = lots.map(l => {
-    totalBig   += l.big;
-    totalSmall += l.small;
-    return `<tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;font-weight:600">${l.code}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #f5f5f5"><span class="tag tag-o">${saveur}</span></td>
-      <td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#d44218">${l.big || '—'}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#0662aa">${l.small || '—'}</td>
-    </tr>`;
+    const isBlue = saveur && saveur.includes('WOODY');
+    return '<tr>'
+      + '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;font-weight:600">' + l.code + '</td>'
+      + '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5"><span class="tag ' + ('tag-o') + '">' + saveur + '</span></td>'
+      + (showBig   ? '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#d44218">' + (l.big||0)   + '</td>' : '')
+      + (showSmall ? '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#0662aa">' + (l.small||0) + '</td>' : '')
+      + '</tr>';
   }).join('');
 
-  document.getElementById('bon-total-big').textContent   = totalBig;
-  document.getElementById('bon-total-small').textContent = totalSmall;
-  // Recalculer boîtes Big et Small depuis les lots
-  let bBig = 0, bSmall = 0;
-  lots.forEach(l => {
-    bBig   += Math.ceil((l.big   || 0) / 12);
-    bSmall += Math.ceil((l.small || 0) / 25);
-  });
+  // Totaux : afficher uniquement ce qui est > 0
+  const totauxEl = document.getElementById('bon-totaux-section');
+  if (totauxEl) {
+    totauxEl.innerHTML = ''
+      + (showBig   ? '<div style="background:#fbe8e2;border-radius:10px;padding:12px 16px;flex:1"><div style="font-size:10px;font-weight:700;color:#d44218;text-transform:uppercase;margin-bottom:2px">Total Big (165g)</div><div style="font-size:22px;font-weight:700;color:#d44218">' + totalBig + '</div></div>' : '')
+      + (showSmall ? '<div style="background:#e0edf8;border-radius:10px;padding:12px 16px;flex:1"><div style="font-size:10px;font-weight:700;color:#0662aa;text-transform:uppercase;margin-bottom:2px">Total Small (80g)</div><div style="font-size:22px;font-weight:700;color:#0662aa">' + totalSmall + '</div></div>' : '');
+  }
+
+  // Boîtes : juste la quantité totale
   const bonBoitesSection = document.getElementById('bon-boites-section');
   if (boites > 0) {
     bonBoitesSection.style.display = '';
     if (typeBoite === 'blanche') {
-      // Boîtes blanches Ixelles
       bonBoitesSection.style.background = '#f0f7f0';
-      bonBoitesSection.innerHTML = `
-        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🗃️ Boîtes blanches</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#d4edda;border-radius:8px;padding:10px 14px">
-          <div>
-            <div style="font-size:12px;font-weight:700;color:#1a7a3a">Boîtes blanches envoyées</div>
-            <div style="font-size:11px;color:#888;margin-top:1px">1 boîte = 40 cookies</div>
-          </div>
-          <div style="font-size:28px;font-weight:700;color:#1a7a3a">${boites}</div>
-        </div>`;
+      bonBoitesSection.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#1a7a3a">🗃️ Boîtes blanches envoyées</div><div style="font-size:11px;color:#888;margin-top:1px">1 boîte = 40 Big (165g)</div></div><div style="font-size:32px;font-weight:700;color:#1a7a3a">' + boites + '</div></div>';
     } else {
-      // Boîtes plastiques
       bonBoitesSection.style.background = '#f7f8fa';
-      bonBoitesSection.innerHTML = `
-        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">📦 Boîtes plastiques envoyées</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div style="background:#fbe8e2;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-            <div><div style="font-size:10px;font-weight:700;color:#d44218;text-transform:uppercase">Big (165g)</div><div style="font-size:10px;color:#888;margin-top:1px">1 boîte = 12 cookies</div></div>
-            <div style="font-size:26px;font-weight:700;color:#d44218">${bBig}</div>
-          </div>
-          <div style="background:#e0edf8;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-            <div><div style="font-size:10px;font-weight:700;color:#0662aa;text-transform:uppercase">Small (80g)</div><div style="font-size:10px;color:#888;margin-top:1px">1 boîte = 25 cookies</div></div>
-            <div style="font-size:26px;font-weight:700;color:#0662aa">${bSmall}</div>
-          </div>
-        </div>
-        <div style="padding-top:10px;border-top:1px dashed #e0e0e0;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;color:#aaa">
-          <span>Boîtes retournées ce jour : ___________</span>
-          <span>Solde après livraison : ___________</span>
-        </div>`;
+      bonBoitesSection.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#888">📦 Boîtes plastiques envoyées</div></div><div style="font-size:32px;font-weight:700;color:#1a1a2e">' + boites + '</div></div>';
     }
   } else {
     bonBoitesSection.style.display = 'none';
@@ -2647,7 +2716,9 @@ async function saveSortie() {
         });
         // Historique — 1 ligne par lot
         lots.forEach(lot => {
+          const sortieId = Date.now() + Math.random();
           const tr = document.createElement('tr');
+          tr.setAttribute('data-sortie-id', sortieId);
           tr.innerHTML = `
             <td class="sub-text">${date} ${time}</td>
             <td><span class="tag tag-o">${saveur}</span></td>
@@ -2655,10 +2726,15 @@ async function saveSortie() {
             <td>${lot.code}</td>
             <td>${lot.big||0}</td><td>${lot.small||0}</td>
             <td>${boites > 0 ? boites : '—'}</td>
-            <td class="sub-text">${livreur}</td>`;
+            <td class="sub-text">${livreur}</td>
+            <td><button onclick="annulerSortie(${sortieId})"
+              style="background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:3px 7px;border-radius:6px;white-space:nowrap;transition:all .15s"
+              onmouseover="this.style.background='#fbe8e2';this.style.color='#d44218'"
+              onmouseout="this.style.background='none';this.style.color='#ccc'"
+              title="Annuler et retourner au stock">↩️ Annuler</button></td>`;
           tbody.prepend(tr);
           // Sauvegarder dans localStorage
-          storedSorties.unshift({ date: new Date().toISOString(), saveur, destination, lot: lot.code, big: lot.big||0, small: lot.small||0, boites: boites||0, producteur: livreur });
+          storedSorties.unshift({ id: sortieId, date: new Date().toISOString(), saveur, destination, lot: lot.code, big: lot.big||0, small: lot.small||0, boites: boites||0, producteur: livreur });
         });
       });
       localStorage.setItem('kooki_sorties', JSON.stringify(storedSorties));
@@ -2834,7 +2910,7 @@ function renderHistoriqueConsommations() {
     tbody.innerHTML = '<tr><td colspan="3" class="empty">Aucune consommation enregistrée.</td></tr>';
     return;
   }
-  tbody.innerHTML = hist.map(r => {
+  tbody.innerHTML = hist.map((r, idx) => {
     const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
     const details = Object.entries(r.conso || {})
       .map(([ing, used]) => `<span class="tag tag-b" style="font-size:10px;margin:1px">${ing} −${used}g</span>`)
@@ -2843,6 +2919,11 @@ function renderHistoriqueConsommations() {
       <td class="sub-text">${d}</td>
       <td><b>${r.ref || '—'}</b></td>
       <td style="line-height:1.8">${details}</td>
+      <td><button onclick="supprimerConsommation(${idx})"
+        style="background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px"
+        onmouseover="this.style.color='#d44218';this.style.background='#fbe8e2'"
+        onmouseout="this.style.color='#ccc';this.style.background='none'"
+        title="Supprimer et remettre le stock">🗑️</button></td>
     </tr>`;
   }).join('');
 }
@@ -3072,7 +3153,7 @@ function renderSacsDispoGrid() {
       const sav   = parts[0], num = parts[1];
       const isBlue = sav === 'WOODY';
       return `<div class="sac-card" style="opacity:.6">
-        <div class="sac-name"><span class="tag ${isBlue?'tag-b':'tag-o'}" style="font-size:11px">${sav}</span> Bac ${num}</div>
+        <div class="sac-name"><span class="tag ${'tag-o'}" style="font-size:11px">${sav}</span> Bac ${num}</div>
         <div class="sac-status" style="color:#aaa">— Non calculé</div>
         <div style="font-size:10px;color:#bbb;margin-top:3px">Vérifiez la connexion API</div>
       </div>`;
@@ -3088,7 +3169,7 @@ function renderSacsDispoGrid() {
 
     return `<div class="sac-card ${s.ok ? 'ok' : 'nok'}">
       <div class="sac-name">
-        <span class="tag ${isBlue?'tag-b':'tag-o'}" style="font-size:11px">${sav}</span>
+        <span class="tag ${'tag-o'}" style="font-size:11px">${sav}</span>
         <span style="margin-left:5px;font-size:12px;color:#888">Sac ${num}</span>
       </div>
       <div class="sac-status ${s.ok?'ok':'nok'}">${s.ok ? '✅ Peut être produit' : '❌ Ingrédient(s) manquant(s)'}</div>
@@ -3171,12 +3252,17 @@ function renderHistoriqueLivraisons() {
     return;
   }
 
-  tbody.innerHTML = local.map(r => {
+  tbody.innerHTML = local.map((r, idx) => {
     const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
     return `<tr>
       <td class="sub-text">${d}</td>
       <td><span class="bl-tag">${r.bl || '—'}</span></td>
       <td>${r.fournisseur || '—'}</td>
+      <td><button onclick="supprimerLivraison(${idx})"
+        style="background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px"
+        onmouseover="this.style.color='#d44218';this.style.background='#fbe8e2'"
+        onmouseout="this.style.color='#ccc';this.style.background='none'"
+        title="Supprimer cette livraison et reverser le stock">🗑️</button></td>
     </tr>`;
   }).join('');
 }
@@ -3285,7 +3371,7 @@ function buildIxellesForm() {
   const container = document.getElementById('ixelles-saveurs-form');
   if (!container) return;
   container.innerHTML = ALL_SAVEURS_CMD.map(sav => {
-    const total  = stockLocal.filter(l => l.saveur === sav).reduce((s, l) => s + l.big + l.small, 0);
+    const total  = stockLocal.filter(l => l.saveur === sav).reduce((s, l) => s + l.big, 0); // Big uniquement
     const bacs   = Math.floor(total / COOKIES_PAR_BAC);
     const isBlue = sav === 'WOODY';
     // Toujours activé — le stock se vérifie côté Virginia/Lila, pas ici
@@ -3293,7 +3379,7 @@ function buildIxellesForm() {
       ? `<span style="font-size:12px;font-weight:700;color:#27ae60">${bacs} bac${bacs !== 1 ? 's' : ''} dispo</span>`
       : `<span style="font-size:12px;font-weight:700;color:#aaa">Stock à vérifier</span>`;
     return `<div class="cmd-saveur-row" style="grid-template-columns:1fr 120px 1fr">
-      <span class="tag ${isBlue ? 'tag-b' : 'tag-o'}" style="font-size:12px">${sav}</span>
+      <span class="tag ${'tag-o'}" style="font-size:12px">${sav}</span>
       <input type="number" min="0" class="cmd-input" id="cmd-bacs-${sav}" placeholder="0"
         oninput="updateIxellesBoitesPreview()">
       <div style="text-align:right">
@@ -3317,20 +3403,19 @@ function getStockBySaveur(saveur) {
 }
 
 function calculerFIFO_bacs(saveur, nbBacs) {
+  // Ixelles : Big cookies uniquement (pas de Small/Baby size)
   const lots = getStockBySaveur(saveur);
   const plan = [];
   let rest = nbBacs * COOKIES_PAR_BAC;
   for (const lot of lots) {
     if (rest <= 0) break;
-    const dispo = lot.big + lot.small;
+    const dispo = lot.big; // Big uniquement
     if (!dispo) continue;
-    const take     = Math.min(rest, dispo);
-    const takeBig  = Math.min(take, lot.big);
-    const takeSm   = Math.min(take - takeBig, lot.small);
-    plan.push({ code: lot.code, big: takeBig, small: takeSm, total: takeBig + takeSm });
-    rest -= takeBig + takeSm;
+    const take = Math.min(rest, dispo);
+    plan.push({ code: lot.code, big: take, small: 0, total: take });
+    rest -= take;
   }
-  const totalDispo = lots.reduce((s, l) => s + l.big + l.small, 0);
+  const totalDispo = lots.reduce((s, l) => s + l.big, 0); // Big uniquement
   return {
     plan,
     suffisant: totalDispo >= nbBacs * COOKIES_PAR_BAC,
@@ -3375,9 +3460,9 @@ function cmdCardHTML(cmd) {
     return `<div style="padding:6px 0;border-bottom:1px solid #f5f5f5">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
         <span>${icon}</span>
-        <span class="tag ${isBlue ? 'tag-b' : 'tag-o'}" style="font-size:11px">${l.saveur}</span>
+        <span class="tag ${'tag-o'}" style="font-size:11px">${l.saveur}</span>
         <span style="font-size:13px;font-weight:700;color:#1a7a3a">${l.bacs} bac${l.bacs > 1 ? 's' : ''}</span>
-        <span style="font-size:11px;color:#888">= ${l.bacs * COOKIES_PAR_BAC} cookies max</span>
+        <span style="font-size:11px;color:#888">= ${l.bacs * COOKIES_PAR_BAC} Big (165g)</span>
         ${manque}
       </div>
       <div>${chips || '<span style="font-size:11px;color:#ccc">Aucun lot disponible</span>'}</div>
@@ -3459,6 +3544,7 @@ function validerCommandeIxelles(id) {
   const totalBacs = cmd.totalBacs || cmd.lignes.reduce((s, l) => s + l.bacs, 0);
   allLots.forEach(lot => {
     storedSorties.unshift({
+      id:          Date.now() + Math.random(),
       date:        now.toISOString(),
       saveur:      lot.saveur,
       destination: 'Magasin Ixelles',
@@ -4014,7 +4100,7 @@ async function saveProduction() {
       // 2. Ajouter dans le tableau historique production
       const isBlue = saveur === 'WOODY';
       const trProd = document.createElement('tr');
-      trProd.innerHTML = `<td><b>${code}</b></td><td><span class="tag ${isBlue?'tag-b':'tag-o'}">${saveur}</span></td><td>${big}</td><td>${small}</td><td style="color:${isBlue?'#0662aa':'#d44218'};font-weight:700">${big}</td><td>${small}</td><td class="sub-text">${pmx}</td><td>${nom}</td>`;
+      trProd.innerHTML = `<td><b>${code}</b></td><td><span class="tag ${'tag-o'}">${saveur}</span></td><td>${big}</td><td>${small}</td><td style="color:${'#d44218'};font-weight:700">${big}</td><td>${small}</td><td class="sub-text">${pmx}</td><td>${nom}</td>`;
       document.getElementById('prod-table').prepend(trProd);
 
       // 3. Mettre à jour la page Stock
@@ -4024,7 +4110,7 @@ async function saveProduction() {
       updateDashboardStockTable();
 
       // 5. Ajouter dans la base de recherche
-      SEARCH_DB.unshift({ cat:'Production', icon:'🏭', ref:code, detail:`${saveur} · ${pmx} · ${nom}`, page:'production' });
+      SEARCH_DB.unshift({ cat:'Production', icon:'🏭', ref:code, detail:`${saveur} · ${pmx} · ${nom}`, page:'stock', anchor:`.stock-lot-row[data-ref="${code}"]` });
 
       // 6. Rafraîchir le graphique producteur + lots du jour + calendrier + inventaire
       buildProdByProducer();
@@ -4076,14 +4162,15 @@ async function saveReception() {
   if (tbody.querySelector('.empty')) tbody.innerHTML = '';
 
   // Colonne Facture Odoo : affichée si liée, sinon bouton pour lier plus tard
-  const safeNum = numero.replace(/'/g, "\\'");
+  const safeNum = numero.replace(/[^a-zA-Z0-9]/g, '_');
+  const safeFo  = fournisseur.replace(/'/g, "\\'");
   const facCell = factureOdoo
     ? `<span style="color:#27ae60;font-weight:700">✓ ${factureOdoo}</span>`
     : `<span style="display:flex;align-items:center;gap:6px">
         <input type="text" id="odoo_${safeNum}" placeholder="BILL/2026/…"
           style="padding:4px 8px;border:1.5px solid #e8e8e8;border-radius:7px;font-size:12px;outline:none;width:150px"
           onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'">
-        <button onclick="lierFactureDepuisReception('${safeNum}','${fournisseur.replace(/'/g,"\\'")}')"
+        <button onclick="lierFactureDepuisReception('${numero.replace(/'/g,"\\'")}','${safeFo}')"
           style="padding:4px 10px;background:#d44218;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">
           Lier
         </button>
@@ -4103,17 +4190,16 @@ async function saveReception() {
 
 function lierFactureDepuisReception(bl, fournisseur) {
   const safeId = bl.replace(/[^a-zA-Z0-9]/g, '_');
-  const input  = document.getElementById('odoo_' + bl.replace(/'/g, ''));
+  const input  = document.getElementById('odoo_' + safeId);
   if (!input || !input.value.trim()) {
     if (input) { input.style.borderColor = '#d44218'; setTimeout(() => input.style.borderColor = '#e8e8e8', 2000); }
     return;
   }
   const facVal = input.value.trim();
-  // Sauvegarder la correspondance — propagation automatique à tous les Premix/Productions
   saveCorrespondance(bl, facVal, fournisseur, true);
-  // Mettre à jour la cellule
   const cell = document.getElementById('fac-cell-' + safeId);
-  if (cell) cell.innerHTML = `<span style="color:#27ae60;font-weight:700">✓ ${facVal}</span>`;
+  const safeBl = bl.replace(/'/g, "\\'");
+  if (cell) cell.innerHTML = facCellLiee(facVal, safeBl, safeId);
 }
 
 // ─────────────────────────────────────
@@ -4182,6 +4268,37 @@ function resetCorr() {
   const fo = document.getElementById('corr-fournisseur'); if (fo) fo.selectedIndex = 0;
 }
 
+function facCellLiee(facture, safeBl, safeNum) {
+  return `<span style="display:flex;align-items:center;gap:8px">
+    <span style="color:#27ae60;font-weight:700">✓ ${facture}</span>
+    <button onclick="supprimerLiaison('${safeBl}','${safeNum}')" title="Corriger ce numéro de facture"
+      style="padding:2px 8px;background:#fbe8e2;color:#d44218;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+      Corriger
+    </button>
+  </span>`;
+}
+
+function facCellNonLiee(safeNum, safeBl, safeFo) {
+  return `<span style="display:flex;align-items:center;gap:6px">
+    <input type="text" id="odoo_${safeNum}" placeholder="BILL/2026/…"
+      style="padding:4px 8px;border:1.5px solid #e8e8e8;border-radius:7px;font-size:12px;outline:none;width:150px"
+      onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'">
+    <button onclick="lierFactureDepuisReception('${safeBl}','${safeFo}')"
+      style="padding:4px 10px;background:#d44218;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">
+      Lier
+    </button>
+  </span>`;
+}
+
+function supprimerLiaison(bl, safeNum) {
+  if (!confirm(`Supprimer le lien facture pour le BL "${bl}" ?\nTu pourras saisir le bon numéro juste après.`)) return;
+  correspondances = correspondances.filter(c => c.bl !== bl);
+  saveCorrespondancesLocal();
+  buildFacturesRecap();
+  const cell = document.getElementById('fac-cell-' + safeNum);
+  if (cell) cell.innerHTML = facCellNonLiee(safeNum, bl.replace(/'/g, "\\'"), '');
+}
+
 function refreshCorrTable() {
   const tbody = document.getElementById('corr-table');
   if (!tbody) return;
@@ -4230,14 +4347,9 @@ function buildFacturesRecap() {
     const factures = allBLs.map(bl => {
       const c = getFacturePourBL(bl);
       return c
-        ? `<span style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
-             <span class="bl-tag" style="font-size:10px">${bl}</span>
-             <span style="color:#ccc">→</span>
-             <span style="color:#27ae60;font-weight:700;font-size:12px">${c.facture}</span>
-           </span>`
+        ? `<span style="display:block;color:#27ae60;font-weight:700;font-size:13px;margin-bottom:3px">${c.facture}</span>`
         : `<span style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
              <span class="bl-tag" style="font-size:10px">${bl}</span>
-             <span style="color:#ccc">→</span>
              <span style="color:#d44218;font-size:11px;font-weight:600">Non lié</span>
            </span>`;
     }).join('') || '<span style="color:#ccc;font-size:12px">—</span>';
@@ -4251,12 +4363,179 @@ function buildFacturesRecap() {
         ${date ? `<div class="sub-text">${date}</div>` : ''}
       </td>
       <td>${prod.pmx || '—'}</td>
-      <td><span class="tag ${isBlue?'tag-b':'tag-o'}">${prod.saveur}</span></td>
+      <td><span class="tag ${'tag-o'}">${prod.saveur}</span></td>
       <td>${prod.nom || '—'}</td>
       <td>${pmxEntry ? (pmxEntry.nom || '—') : '<span style="color:#ccc">—</span>'}</td>
       <td style="min-width:220px">${factures}</td>
     </tr>`;
   }).join('');
+}
+
+// ─────────────────────────────────────
+// TRAÇABILITÉ AFSCA
+// ─────────────────────────────────────
+function tracaSearch(q) {
+  const container = document.getElementById('traca-result');
+  const printBtn  = document.getElementById('traca-print-btn');
+  if (!container) return;
+  q = (q || '').trim().toUpperCase();
+  if (!q) { container.innerHTML = ''; printBtn.style.display = 'none'; return; }
+
+  const prods   = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix')      || '[]');
+  const pmxIndex = {};
+  premixs.forEach(p => { pmxIndex[p.codePremix] = p; });
+
+  // Chercher : lot de prod, code premix, ou numéro de facture/BL
+  let matchedProds = [];
+
+  // Correspondance directe sur code prod
+  const byProd = prods.filter(p => p.code.toUpperCase().includes(q));
+  if (byProd.length) matchedProds = byProd;
+
+  // Correspondance sur code premix
+  if (!matchedProds.length) {
+    const byPmx = prods.filter(p => (p.pmx || '').toUpperCase().includes(q));
+    if (byPmx.length) matchedProds = byPmx;
+    // Aussi : le premix seul (sans lot prod associé)
+    const pmxDirect = premixs.filter(p => p.codePremix.toUpperCase().includes(q) && !byPmx.find(pp => pp.pmx === p.codePremix));
+    pmxDirect.forEach(p => matchedProds.push({ _premixOnly: true, pmxEntry: p }));
+  }
+
+  // Correspondance sur numéro de facture ou BL
+  if (!matchedProds.length) {
+    prods.forEach(prod => {
+      const pmxEntry = pmxIndex[prod.pmx] || null;
+      const allBLs = [...new Set([...(prod.bls||prod.factures||[]), ...(pmxEntry ? (pmxEntry.bls||pmxEntry.factures||[]) : [])])];
+      const allFacs = allBLs.map(bl => getFacturePourBL(bl)).filter(Boolean).map(c => c.facture.toUpperCase());
+      if (allBLs.some(bl => bl.toUpperCase().includes(q)) || allFacs.some(f => f.includes(q))) {
+        matchedProds.push(prod);
+      }
+    });
+  }
+
+  if (!matchedProds.length) {
+    container.innerHTML = `<div style="text-align:center;color:#aaa;padding:20px;font-size:14px">Aucun résultat pour <b>${q}</b></div>`;
+    printBtn.style.display = 'none';
+    return;
+  }
+
+  const html = matchedProds.map(prod => {
+    if (prod._premixOnly) return tracaCardPremixOnly(prod.pmxEntry);
+    const pmxEntry = pmxIndex[prod.pmx] || null;
+    const blsProd  = prod.bls || prod.factures || [];
+    const blsPmx   = pmxEntry ? (pmxEntry.bls || pmxEntry.factures || []) : [];
+    const allBLs   = [...new Set([...blsProd, ...blsPmx])];
+
+    const facRows = allBLs.length ? allBLs.map(bl => {
+      const c = getFacturePourBL(bl);
+      return c
+        ? `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5">
+            <span style="font-size:11px;color:#888;width:90px;flex-shrink:0">BL reçu</span>
+            <span class="bl-tag">${bl}</span>
+            <span style="color:#ccc;font-size:12px">→</span>
+            <span style="color:#27ae60;font-weight:700;font-size:13px">${c.facture}</span>
+            ${c.fournisseur ? `<span style="color:#888;font-size:11px">· ${c.fournisseur}</span>` : ''}
+            <span style="margin-left:auto;background:#e8f5e9;color:#27ae60;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">✓ Lié</span>
+          </div>`
+        : `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5">
+            <span style="font-size:11px;color:#888;width:90px;flex-shrink:0">BL reçu</span>
+            <span class="bl-tag">${bl}</span>
+            <span style="margin-left:auto;background:#fbe8e2;color:#d44218;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">⚠️ Non lié</span>
+          </div>`;
+    }).join('') : `<div style="color:#aaa;font-size:12px;padding:6px 0">Aucun bon de livraison enregistré</div>`;
+
+    const linked   = allBLs.filter(bl => getFacturePourBL(bl));
+    const allLinked = allBLs.length > 0 && linked.length === allBLs.length;
+    const noneLinked = linked.length === 0;
+    const statusColor = allLinked ? '#27ae60' : noneLinked ? '#d44218' : '#e67e22';
+    const statusLabel = allLinked ? '✓ Traçabilité complète' : noneLinked ? '⚠️ Factures manquantes' : '⚡ Traçabilité partielle';
+
+    const dateStr = prod.date ? new Date(prod.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' }) : '—';
+
+    return `<div style="border:1.5px solid #e8e8e8;border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <!-- En-tête lot -->
+      <div style="background:#f7f8fa;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#1a1a2e">${prod.code}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">Lot de production · ${dateStr}</div>
+        </div>
+        <span style="background:#fbe8e2;color:#d44218;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${prod.saveur}</span>
+        <span style="background:#f7f8fa;border:1px solid #e0e0e0;color:#555;font-size:11px;padding:3px 10px;border-radius:20px">👤 ${prod.nom || '—'}</span>
+        ${prod.big || prod.small ? `<span style="font-size:12px;color:#555;margin-left:4px"><b>${prod.big||0}</b> Big · <b>${prod.small||0}</b> Small</span>` : ''}
+        <span style="margin-left:auto;background:${allLinked?'#e8f5e9':noneLinked?'#fbe8e2':'#fff8e1'};color:${statusColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">${statusLabel}</span>
+      </div>
+      <!-- Premix -->
+      <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;width:90px;flex-shrink:0">Premix</span>
+        ${pmxEntry
+          ? `<span style="font-weight:700;color:#1a1a2e">${pmxEntry.codePremix}</span>
+             <span style="color:#888;font-size:12px">Sac ${pmxEntry.sac||'?'}</span>
+             <span style="background:#f0f0f0;color:#555;font-size:11px;padding:2px 8px;border-radius:20px">👤 ${pmxEntry.nom||'—'}</span>`
+          : `<span style="color:#d44218;font-size:12px">⚠️ Premix non retrouvé (${prod.pmx||'—'})</span>`}
+      </div>
+      <!-- Factures -->
+      <div style="padding:12px 18px">${facRows}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = html;
+  printBtn.style.display = 'inline-flex';
+}
+
+function tracaCardPremixOnly(p) {
+  const allBLs = p.bls || p.factures || [];
+  const facRows = allBLs.length ? allBLs.map(bl => {
+    const c = getFacturePourBL(bl);
+    return c
+      ? `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5">
+          <span style="font-size:11px;color:#888;width:90px;flex-shrink:0">BL reçu</span>
+          <span class="bl-tag">${bl}</span>
+          <span style="color:#ccc;font-size:12px">→</span>
+          <span style="color:#27ae60;font-weight:700;font-size:13px">${c.facture}</span>
+          ${c.fournisseur ? `<span style="color:#888;font-size:11px">· ${c.fournisseur}</span>` : ''}
+          <span style="margin-left:auto;background:#e8f5e9;color:#27ae60;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">✓ Lié</span>
+        </div>`
+      : `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5">
+          <span style="font-size:11px;color:#888;width:90px;flex-shrink:0">BL reçu</span>
+          <span class="bl-tag">${bl}</span>
+          <span style="margin-left:auto;background:#fbe8e2;color:#d44218;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">⚠️ Non lié</span>
+        </div>`;
+  }).join('') : `<div style="color:#aaa;font-size:12px;padding:6px 0">Aucun bon de livraison enregistré</div>`;
+
+  return `<div style="border:1.5px solid #e8e8e8;border-radius:14px;overflow:hidden;margin-bottom:14px">
+    <div style="background:#f7f8fa;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#1a1a2e">${p.codePremix}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">Premix · Sac ${p.sac||'?'}</div>
+      </div>
+      <span style="background:#fbe8e2;color:#d44218;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${p.saveur||'—'}</span>
+      <span style="background:#f7f8fa;border:1px solid #e0e0e0;color:#555;font-size:11px;padding:3px 10px;border-radius:20px">👤 ${p.nom||'—'}</span>
+    </div>
+    <div style="padding:12px 18px">${facRows}</div>
+  </div>`;
+}
+
+function tracaPrint() {
+  const content = document.getElementById('traca-result')?.innerHTML || '';
+  const query   = document.getElementById('traca-input')?.value || '';
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Traçabilité KOOKI — ${query}</title>
+    <style>
+      body{font-family:'Segoe UI',system-ui,sans-serif;padding:30px;color:#1a1a2e;font-size:13px}
+      h2{margin-bottom:6px;font-size:18px}
+      .sub{color:#888;font-size:12px;margin-bottom:24px}
+      .bl-tag{background:#e0edf8;color:#0662aa;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+      @media print{button{display:none}}
+    </style>
+    </head><body>
+    <h2>Fiche de traçabilité KOOKI</h2>
+    <div class="sub">Recherche : <b>${query}</b> — Imprimé le ${new Date().toLocaleDateString('fr-FR')}</div>
+    ${content}
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
 }
 
 async function loadCorrespondances() {
@@ -4349,7 +4628,7 @@ function buildRecapBL() {
     const statusClass = unlinked.length === 0 ? 'badge-complet' : linked.length === 0 ? 'badge-aucun' : 'badge-partiel';
     const statusLabel = unlinked.length === 0 ? '✓ Complet' : linked.length === 0 ? '⚠️ Non lié' : '⚡ Partiel';
     const typeIcon = e.type === 'premix' ? '🥣 Premix' : '🏭 Production';
-    const tagHtml  = e.tag ? `<span class="tag ${e.tag==='WOODY'?'tag-b':'tag-o'}" style="margin-left:6px">${e.tag}</span>` : '';
+    const tagHtml  = e.tag ? `<span class="tag ${'tag-o'}" style="margin-left:6px">${e.tag}</span>` : '';
 
     html += `<div class="lot-recap-card">
       <div class="lot-recap-header">
@@ -4393,7 +4672,7 @@ function saveFacture() {
   const ajouteLe = new Date().toLocaleDateString('fr-FR');
   facturesManuelles.unshift({ numero, fournisseur, codeProduction: code, ajouteLe });
   refreshFacTable();
-  SEARCH_DB.unshift({ ref:numero, type:'Facture', saveur:'—', premix:code||'—', producteur:fournisseur });
+  SEARCH_DB.unshift({ cat:'Facture', icon:'🧾', ref:numero, detail:`${fournisseur} · lot ${code||'—'}`, page:'factures', anchor:`#fac-table tr[data-ref="${numero}"]` });
   toast('fac','✓ Facture ajoutée !','ok');
   resetFac();
 }
@@ -4415,16 +4694,8 @@ async function loadRecentInvoices() {
       const safeBl  = (r.numero||'').replace(/'/g, "\\'");
       const safeFo  = (r.fournisseur||'').replace(/'/g, "\\'");
       const facCell = corresp
-        ? `<span style="color:#27ae60;font-weight:700">✓ ${corresp.facture}</span>`
-        : `<span style="display:flex;align-items:center;gap:6px">
-            <input type="text" id="odoo_${safeNum}" placeholder="BILL/2026/…"
-              style="padding:4px 8px;border:1.5px solid #e8e8e8;border-radius:7px;font-size:12px;outline:none;width:150px"
-              onfocus="this.style.borderColor='#d44218'" onblur="this.style.borderColor='#e8e8e8'">
-            <button onclick="lierFactureDepuisReception('${safeBl}','${safeFo}')"
-              style="padding:4px 10px;background:#d44218;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">
-              Lier
-            </button>
-           </span>`;
+        ? facCellLiee(corresp.facture, safeBl, safeNum)
+        : facCellNonLiee(safeNum, safeBl, safeFo);
 
       tbody.innerHTML += `<tr data-bl="${r.numero}">
         <td class="sub-text">${d}</td>
@@ -4623,7 +4894,7 @@ function buildProdLegend() {
 // Le dernier point de chaque série est mis à jour dynamiquement depuis stockLocal
 const CHART_SAVEURS = [
   { name:'SUZZY', color:'#d44218' },
-  { name:'WOODY', color:'#0662aa' },
+  { name:'WOODY', color:'#d44218' },
   { name:'JACKY', color:'#e8956a' },
   { name:'BENNY', color:'#3a8fc9' },
   { name:'DAVY',  color:'#a02e10' },
@@ -4893,7 +5164,7 @@ function applyStock(data) {
   // Mettre à jour la SEARCH_DB avec les vrais lots
   stockLocal.forEach(l => {
     if (!SEARCH_DB.find(d => d.ref === l.code)) {
-      SEARCH_DB.push({ cat:'Production', icon:'🏭', ref: l.code, detail: l.saveur, page:'production' });
+      SEARCH_DB.push({ cat:'Production', icon:'🏭', ref: l.code, detail: l.saveur, page:'stock', anchor:`.stock-lot-row[data-ref="${l.code}"]` });
     }
   });
 }
@@ -4918,36 +5189,156 @@ function applyRecentInvoices(data) {
 }
 
 // ── Sorties frigo ──
+
+function annulerSortie(sortieId) {
+  if (!confirm('Annuler cette sortie et retourner les cookies dans le stock ?')) return;
+
+  const sorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  const sortie  = sorties.find(s => String(s.id) === String(sortieId));
+
+  if (!sortie) { alert('Sortie introuvable dans le stock local.'); return; }
+  if (sortie.annule) { alert('Cette sortie est déjà annulée.'); return; }
+
+  // Retourner les cookies dans stockLocal
+  const code   = sortie.lot;
+  const saveur = sortie.saveur;
+  const big    = Number(sortie.big)   || 0;
+  const small  = Number(sortie.small) || 0;
+
+  const existing = stockLocal.find(s => s.code === code);
+  if (existing) {
+    existing.big   += big;
+    existing.small += small;
+  } else if (code && code !== '—') {
+    stockLocal.push({ code, saveur, big, small });
+  }
+
+  // Sauvegarder dans localStorage
+  localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
+
+  // Marquer la sortie comme annulée
+  sortie.annule = true;
+  localStorage.setItem('kooki_sorties', JSON.stringify(sorties));
+
+  // Mettre à jour l'affichage
+  updateStockPage();
+  updateDashboardStockTable();
+  applySorties([]);
+
+  // Feedback
+  const msg = `✓ Sortie annulée — ${big > 0 ? big + ' Big' : ''} ${small > 0 ? small + ' Small' : ''} de ${saveur} retourné${big+small>1?'s':''} dans le stock`;
+  // Trouver un toast disponible
+  const toastEl = document.getElementById('toast-sortie');
+  if (toastEl) { toastEl.textContent = msg; toastEl.className = 'toast ok'; toastEl.style.display = 'inline-block'; setTimeout(() => toastEl.style.display = 'none', 4000); }
+}
+
 function applySorties(data) {
   const local = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
   const source = local.length ? local : (Array.isArray(data) ? data : []);
-  if (!source.length) return;
   const tbody = document.getElementById('sortie-history');
   if (!tbody) return;
-  tbody.innerHTML = '';
-  source.forEach(r => {
+
+  if (!source.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Aucune sortie enregistrée.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = source.map((r, idx) => {
     const d = r.date ? new Date(r.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
     const isBlue = r.saveur && r.saveur.includes('WOODY');
-    tbody.innerHTML += `<tr>
+    const rowId  = r.id || idx;
+    if (r.annule) {
+      return `<tr style="opacity:.45;text-decoration:line-through" data-sortie-id="${rowId}">
+        <td class="sub-text">${d}</td>
+        <td><span class="tag ${'tag-o'}">${r.saveur || '—'}</span></td>
+        <td>${r.destination || '—'}</td>
+        <td>${r.lot || '—'}</td>
+        <td>${r.big || 0}</td><td>${r.small || 0}</td>
+        <td>${r.boites || '—'}</td>
+        <td class="sub-text">${r.producteur || '—'}</td>
+        <td><span style="font-size:11px;color:#aaa;font-weight:600">Annulée</span></td>
+      </tr>`;
+    }
+    return `<tr data-sortie-id="${rowId}">
       <td class="sub-text">${d}</td>
-      <td><span class="tag ${isBlue ? 'tag-b' : 'tag-o'}">${r.saveur || '—'}</span></td>
+      <td><span class="tag ${'tag-o'}">${r.saveur || '—'}</span></td>
       <td><b>${r.destination || '—'}</b></td>
       <td>${r.lot || '—'}</td>
       <td>${r.big || 0}</td>
       <td>${r.small || 0}</td>
-      <td>—</td>
+      <td>${r.boites || '—'}</td>
       <td class="sub-text">${r.producteur || '—'}</td>
+      <td><button onclick="annulerSortie(${JSON.stringify(rowId)})"
+        style="background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:3px 7px;border-radius:6px;white-space:nowrap;transition:all .15s"
+        onmouseover="this.style.background='#fbe8e2';this.style.color='#d44218'"
+        onmouseout="this.style.background='none';this.style.color='#ccc'"
+        title="Annuler cette sortie et retourner au stock">↩️ Annuler</button></td>
     </tr>`;
-  });
+  }).join('');
 
   // Stat : sorties aujourd'hui
   const today = new Date().toDateString();
-  const countToday = data.filter(r => r.date && new Date(r.date).toDateString() === today).length;
+  const countToday = source.filter(r => r.date && new Date(r.date).toDateString() === today && !r.annule).length;
   const el = document.getElementById('frigo-count-day');
   if (el) el.textContent = countToday;
 }
 
 // ── Production historique ──
+
+// ─────────────────────────────────────
+// SUPPRESSIONS
+// ─────────────────────────────────────
+
+function supprimerProduction(code) {
+  if (!confirm('Supprimer la production ' + code + ' ?\nAttention : le stock cookies NE sera pas modifié automatiquement.')) return;
+  const stored = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const filtered = stored.filter(r => r.code !== code);
+  localStorage.setItem('kooki_productions', JSON.stringify(filtered));
+  // Retirer la ligne du DOM
+  const row = document.querySelector('[data-prod-code="' + code + '"]');
+  if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; setTimeout(() => row.remove(), 300); }
+  buildProdByProducer();
+  if (document.getElementById('prod-bar-chart')) drawProdChart();
+}
+
+function supprimerConsommation(idx) {
+  if (!confirm('Supprimer cette consommation et remettre les ingrédients dans le stock ?')) return;
+  const hist = JSON.parse(localStorage.getItem('kooki_consommations_ing') || '[]');
+  const entry = hist[idx];
+  if (!entry) return;
+  // Remettre les ingrédients dans le stock
+  if (entry.conso) {
+    Object.entries(entry.conso).forEach(([ing, used]) => {
+      stockIngredients[ing] = (stockIngredients[ing] || 0) + Number(used);
+    });
+    localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+  }
+  hist.splice(idx, 1);
+  localStorage.setItem('kooki_consommations_ing', JSON.stringify(hist));
+  renderIngStockGrid();
+  renderHistoriqueConsommations();
+  toast('conso', '✓ Consommation supprimée — stock restauré', 'ok');
+}
+
+function supprimerLivraison(idx) {
+  if (!confirm('Supprimer cette livraison et retirer les quantités du stock ?')) return;
+  const hist = JSON.parse(localStorage.getItem('kooki_livraisons_ing') || '[]');
+  const entry = hist[idx];
+  if (!entry) return;
+  // Retirer du stock (annuler la livraison)
+  if (entry.livraison) {
+    Object.entries(entry.livraison).forEach(([ing, qty]) => {
+      stockIngredients[ing] = Math.max(0, (stockIngredients[ing] || 0) - Number(qty));
+    });
+    localStorage.setItem('kooki_stock_ingredients', JSON.stringify(stockIngredients));
+  }
+  hist.splice(idx, 1);
+  localStorage.setItem('kooki_livraisons_ing', JSON.stringify(hist));
+  renderIngStockGrid();
+  renderHistoriqueLivraisons();
+  toast('ing', '✓ Livraison supprimée — stock mis à jour', 'ok');
+}
+
 function applyProduction(data) {
   // Normaliser les données venant de Google Sheets
   // Format attendu depuis l'onglet "Production" (ligne 72+) :
@@ -4978,17 +5369,22 @@ function applyProduction(data) {
 
   tbody.innerHTML = merged.map(r => {
     const isBlue = r.saveur === 'WOODY';
-    const color  = isBlue ? '#0662aa' : '#d44218';
+    const color  = '#d44218';
     const dateStr = r.date ? new Date(r.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' }) : '';
-    return `<tr>
+    return `<tr data-prod-code="${r.code}">
       <td><b>${r.code}</b>${dateStr ? `<div class="sub-text">${dateStr}</div>` : ''}</td>
-      <td><span class="tag ${isBlue?'tag-b':'tag-o'}">${r.saveur}</span></td>
+      <td><span class="tag ${'tag-o'}">${r.saveur}</span></td>
       <td>${r.big}</td>
       <td>${r.small}</td>
       <td style="color:${color};font-weight:700">${r.big}</td>
       <td>${r.small}</td>
       <td class="sub-text">${r.pmx}</td>
       <td>${r.nom}</td>
+      <td><button onclick="supprimerProduction('${r.code}')"
+        style="background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px"
+        onmouseover="this.style.color='#d44218';this.style.background='#fbe8e2'"
+        onmouseout="this.style.color='#ccc';this.style.background='none'"
+        title="Supprimer">🗑️</button></td>
     </tr>`;
   }).join('');
 
@@ -5028,7 +5424,7 @@ function applyPremix(data) {
           title="Supprimer ce premix">🗑️</button></td>
       </tr>`;
       if (!SEARCH_DB.find(d => d.ref === r.codePremix)) {
-        SEARCH_DB.push({ cat:'Premix', icon:'🥣', ref: r.codePremix, detail: `${r.saveur||''} Sac ${r.sac||'?'} · ${(r.factures||[]).join(', ')}`, page:'premix' });
+        SEARCH_DB.push({ cat:'Premix', icon:'🥣', ref: r.codePremix, detail: `${r.saveur||''} Sac ${r.sac||'?'} · ${(r.factures||[]).join(', ')}`, page:'premix', anchor:`#pmx-table tr[data-code="${r.codePremix}"]` });
       }
     });
   }
@@ -5055,7 +5451,7 @@ function applyFactures(data) {
     (r.factures || []).forEach(f => {
       if (!facturesManuelles.find(fm => fm.numero === f)) {
         facturesManuelles.push({ numero: f, fournisseur: '—', codeProduction: r.codeProduction, ajouteLe });
-        SEARCH_DB.push({ cat:'Facture', icon:'🧾', ref: f, detail: `Lot ${r.codeProduction} · ${r.responsable || '—'}`, page:'factures' });
+        SEARCH_DB.push({ cat:'Facture', icon:'🧾', ref: f, detail: `Lot ${r.codeProduction} · ${r.responsable || '—'}`, page:'factures', anchor:`#fac-table tr[data-ref="${f}"]` });
       }
     });
   });
@@ -5135,6 +5531,307 @@ function chargerStockInitial() {
     localStorage.setItem('kooki_stock_local', JSON.stringify(STOCK_INITIAL));
     localStorage.setItem('kooki_stock_version', VERSION);
   }
+}
+
+// ─────────────────────────────────────
+// ─────────────────────────────────────
+// EXPORT & IMPRESSION FACTURES
+// ─────────────────────────────────────
+function getFacturesData() {
+  const prods   = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix')      || '[]');
+  const pmxIndex = {};
+  premixs.forEach(p => { pmxIndex[p.codePremix] = p; });
+
+  return prods.map(prod => {
+    const pmx    = pmxIndex[prod.pmx] || null;
+    const allBLs = [...new Set([...(prod.bls || prod.factures || []), ...(pmx ? (pmx.bls || pmx.factures || []) : [])])];
+    const facturesResolues = allBLs.map(bl => {
+      const c = getFacturePourBL(bl);
+      return c ? `${bl} → ${c.facture}` : `${bl} → Non lié`;
+    }).join(' | ') || '—';
+
+    const date = prod.date ? new Date(prod.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' }) : '—';
+    return {
+      date,
+      codeProduction:   prod.code          || '—',
+      codePremix:       prod.pmx           || '—',
+      saveur:           prod.saveur        || '—',
+      producteurProd:   prod.nom           || '—',
+      producteurPremix: pmx ? (pmx.nom || '—') : '—',
+      factures:         facturesResolues,
+    };
+  });
+}
+
+function exportFacturesExcel() {
+  const rows = getFacturesData();
+  if (!rows.length) { alert('Aucune production à exporter.'); return; }
+
+  const wsData = [
+    ['Date', 'Code Production', 'Code Premix', 'Saveur', 'Producteur (production)', 'Producteur (premix)', 'N° Factures / BL'],
+    ...rows.map(r => [r.date, r.codeProduction, r.codePremix, r.saveur, r.producteurProd, r.producteurPremix, r.factures])
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Largeurs colonnes
+  ws['!cols'] = [{ wch:12 }, { wch:20 }, { wch:18 }, { wch:10 }, { wch:22 }, { wch:22 }, { wch:40 }];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Productions & Factures');
+  const today = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
+  XLSX.writeFile(wb, `Kooki_Factures_${today}.xlsx`);
+}
+
+function imprimerFactures() {
+  const rows  = getFacturesData();
+  const today = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const lignes = rows.map(r => `
+    <tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#888">${r.date}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700">${r.codeProduction}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px">${r.codePremix}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0">
+        <span style="background:${'#fbe8e2'};color:${'#d44218'};padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">${r.saveur}</span>
+      </td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px">${r.producteurProd}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px">${r.producteurPremix}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#555">${r.factures}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Kooki — Productions & Factures</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 32px; color: #1a1a2e; }
+      table { width: 100%; border-collapse: collapse; }
+      thead tr { background: #1a1a2e; color: #fff; }
+      th { padding: 9px 10px; text-align: left; font-size: 12px; font-weight: 600; }
+      tr:hover td { background: #fdf8f6; }
+    </style>
+  </head><body>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+      <div>
+        <div style="font-size:24px;font-weight:900;color:#d44218;letter-spacing:.06em">KOOKI</div>
+        <div style="font-size:14px;font-weight:700;margin-top:3px">Récapitulatif Productions & Factures</div>
+      </div>
+      <div style="font-size:11px;color:#aaa">Imprimé le ${today}</div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Code Production</th><th>Code Premix</th><th>Saveur</th>
+        <th>Producteur (prod.)</th><th>Producteur (premix)</th><th>Factures / BL</th>
+      </tr></thead>
+      <tbody>${lignes || '<tr><td colspan="7" style="padding:16px;text-align:center;color:#aaa">Aucune production enregistrée.</td></tr>'}</tbody>
+    </table>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+// ─────────────────────────────────────
+// RÉCAPITULATIF SEMAINE B2B
+// ─────────────────────────────────────
+let currentRecapOffset = 0; // 0 = semaine actuelle, -1 = semaine précédente, etc.
+
+function getWeekBounds(offset) {
+  const now = new Date();
+  const day = now.getDay() === 0 ? 7 : now.getDay(); // lundi=1 … dimanche=7
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - day + 1 + offset * 7);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return { monday, sunday };
+}
+
+function recapB2bSemaineActuelle() {
+  currentRecapOffset = 0;
+  renderRecapB2b(0);
+}
+
+function recapB2bSemainePrecedente() {
+  currentRecapOffset--;
+  renderRecapB2b(currentRecapOffset);
+}
+
+function renderRecapB2b(offset) {
+  const { monday, sunday } = getWeekBounds(offset);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
+  document.getElementById('recap-b2b-periode').textContent =
+    `Semaine du ${fmt(monday)} au ${fmt(sunday)}`;
+
+  const sorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  // Filtrer B2B dans la semaine
+  const b2b = sorties.filter(s => {
+    const d = new Date(s.date);
+    const clients = ['Ecocyclo','Galler Ixelles','Galler Woluwe','La Fourmilière',
+      'Penta Hotel','Café Club','Flippers','Slide Coffee','Kooki Anderlecht','Petit Mercado'];
+    return d >= monday && d <= sunday && clients.includes(s.destination);
+  });
+
+  const container = document.getElementById('recap-b2b-content');
+
+  if (!b2b.length) {
+    container.innerHTML = '<div class="empty" style="padding:16px">Aucune livraison B2B cette semaine.</div>';
+    return;
+  }
+
+  // Grouper par client
+  const byClient = {};
+  b2b.forEach(s => {
+    if (!byClient[s.destination]) byClient[s.destination] = {};
+    if (!byClient[s.destination][s.saveur]) byClient[s.destination][s.saveur] = { big:0, small:0 };
+    byClient[s.destination][s.saveur].big   += s.big   || 0;
+    byClient[s.destination][s.saveur].small += s.small || 0;
+  });
+
+  let html = '<div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">';
+  for (const [client, saveurs] of Object.entries(byClient)) {
+    const totalBig   = Object.values(saveurs).reduce((a,v) => a + v.big, 0);
+    const totalSmall = Object.values(saveurs).reduce((a,v) => a + v.small, 0);
+    html += `
+      <div style="background:#f9f9f9;border-radius:12px;padding:13px 16px;border:1px solid #f0f0f0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+          <div style="font-size:14px;font-weight:700;color:#1a1a2e">🏪 ${client}</div>
+          <div style="display:flex;gap:10px">
+            <span style="background:#e0edf8;color:#0662aa;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700">Big : ${totalBig}</span>
+            <span style="background:#fbe8e2;color:#d44218;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700">Small : ${totalSmall}</span>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:.04em">
+            <th style="text-align:left;padding:3px 6px;font-weight:600">Saveur</th>
+            <th style="text-align:center;padding:3px 6px;font-weight:600">Big (165g)</th>
+            <th style="text-align:center;padding:3px 6px;font-weight:600">Small (80g)</th>
+            <th style="text-align:center;padding:3px 6px;font-weight:600">Total cookies</th>
+          </tr></thead>
+          <tbody>`;
+    for (const [saveur, qty] of Object.entries(saveurs)) {
+      html += `<tr style="border-top:1px solid #f0f0f0">
+        <td style="padding:5px 6px;font-weight:600">${saveur}</td>
+        <td style="text-align:center;padding:5px 6px">${qty.big || '—'}</td>
+        <td style="text-align:center;padding:5px 6px">${qty.small || '—'}</td>
+        <td style="text-align:center;padding:5px 6px;color:#888">${(qty.big * 165 + qty.small * 80) > 0 ? qty.big + qty.small + ' pcs' : '—'}</td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+
+  // Ligne totaux globaux
+  const totBig   = b2b.reduce((a,s) => a + (s.big   || 0), 0);
+  const totSmall = b2b.reduce((a,s) => a + (s.small || 0), 0);
+  html += `
+    <div style="background:#1a1a2e;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;font-weight:700;color:#fff">Total semaine B2B</div>
+      <div style="display:flex;gap:12px">
+        <span style="background:#0662aa;color:#fff;border-radius:8px;padding:4px 13px;font-size:13px;font-weight:700">Big : ${totBig}</span>
+        <span style="background:#d44218;color:#fff;border-radius:8px;padding:4px 13px;font-size:13px;font-weight:700">Small : ${totSmall}</span>
+      </div>
+    </div>`;
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// GESTION DES PDF
+// ─────────────────────────────────────
+
+function handlePdfDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('pdf-drop-zone');
+  zone.style.borderColor = '#e0e0e0';
+  zone.style.background  = '';
+  handlePdfSelect(event.dataTransfer.files);
+}
+
+function handlePdfSelect(files) {
+  if (!files || !files.length) return;
+  Array.from(files).forEach(file => {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      alert(file.name + ' : seuls les PDF sont acceptés.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert(file.name + ' est trop volumineux (max 8 MB).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const docs = JSON.parse(localStorage.getItem('kooki_pdf_docs') || '[]');
+      const id   = Date.now();
+      const kb   = Math.round(file.size / 1024);
+      docs.unshift({ id, name: file.name, size: kb, date: new Date().toISOString(), data: e.target.result });
+      try {
+        localStorage.setItem('kooki_pdf_docs', JSON.stringify(docs));
+        renderPdfList();
+      } catch(err) {
+        alert('Stockage insuffisant. Supprime des anciens documents avant d\'en ajouter de nouveaux.');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPdfList() {
+  const container = document.getElementById('pdf-list');
+  if (!container) return;
+  const docs = JSON.parse(localStorage.getItem('kooki_pdf_docs') || '[]');
+  if (!docs.length) {
+    container.innerHTML = '<div class="empty" style="padding:12px">Aucun document importé.</div>';
+    return;
+  }
+  container.innerHTML = docs.map(doc => {
+    const d = doc.date ? new Date(doc.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' }) : '—';
+    const safeName = doc.name.replace(/'/g, "\\'");
+    return `<div class="pdf-item">
+      <div class="pdf-icon">📄</div>
+      <div style="flex:1;min-width:0">
+        <div class="pdf-name">${doc.name}</div>
+        <div class="pdf-meta">${d} · ${doc.size || '?'} KB</div>
+      </div>
+      <div class="pdf-actions">
+        <button class="pdf-btn pdf-btn-dl"    onclick="telechargerPdf(${doc.id})">⬇️ Télécharger</button>
+        <button class="pdf-btn pdf-btn-print" onclick="imprimerPdf(${doc.id})">🖨️ Imprimer</button>
+        <button class="pdf-btn pdf-btn-del"   onclick="supprimerPdf(${doc.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function telechargerPdf(id) {
+  const docs = JSON.parse(localStorage.getItem('kooki_pdf_docs') || '[]');
+  const doc  = docs.find(d => d.id === id);
+  if (!doc) return;
+  const a = document.createElement('a');
+  a.href     = doc.data;
+  a.download = doc.name;
+  a.click();
+}
+
+function imprimerPdf(id) {
+  const docs = JSON.parse(localStorage.getItem('kooki_pdf_docs') || '[]');
+  const doc  = docs.find(d => d.id === id);
+  if (!doc) return;
+  const win = window.open('', '_blank');
+  win.document.write(
+    '<html><head><title>' + doc.name + '</title></head><body style="margin:0">' +
+    '<iframe src="' + doc.data + '" style="width:100vw;height:100vh;border:none"></iframe>' +
+    '<script>window.onload=function(){window.print();}<\/script>' +
+    '</body></html>'
+  );
+  win.document.close();
+}
+
+function supprimerPdf(id) {
+  if (!confirm('Supprimer ce document ?')) return;
+  const docs = JSON.parse(localStorage.getItem('kooki_pdf_docs') || '[]');
+  localStorage.setItem('kooki_pdf_docs', JSON.stringify(docs.filter(d => d.id !== id)));
+  renderPdfList();
 }
 
 function loginAs(name) {
