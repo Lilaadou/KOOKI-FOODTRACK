@@ -3933,6 +3933,15 @@ async function confirmerResoudre() {
     action: 'resoldrePremix', codePremix, bl, fournisseur
   })}).catch(() => {});
 
+  // Enregistrer le nouveau BL dans Réception si fourni
+  if (bl) {
+    bls.forEach(b => {
+      fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({
+        action: 'reception', numero: b, fournisseur: fournisseur || '—', nom: 'Livraison manquants', date: new Date().toISOString()
+      })}).catch(() => {});
+    });
+  }
+
   // Mettre à jour le statut dans la table récap
   const rows = document.querySelectorAll(`#pmx-table tr[data-code="${codePremix}"]`);
   rows.forEach(row => {
