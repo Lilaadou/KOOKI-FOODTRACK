@@ -2765,8 +2765,10 @@ async function saveSortie() {
       updateStockPage();
       updateDashboardStockTable();
       toast('sortie','✓ Sortie enregistrée !','ok');
-      // Bon de livraison avec tous les lots
-      showBonLivraison({ client: destination, saveur: allSaveur, lots: allLots, boites, typeBoite, livreur });
+      // Bon de livraison uniquement pour B2B, événement et usage interne (pas pour les magasins)
+      if (type !== 'magasin' && type !== 'anderlecht') {
+        showBonLivraison({ client: destination, saveur: allSaveur, lots: allLots, boites, typeBoite, livreur });
+      }
       resetSortie();
     } else {
       toast('sortie','❌ '+(json.error||'Erreur'),'err');
