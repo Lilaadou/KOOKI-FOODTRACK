@@ -4859,12 +4859,18 @@ async function loadRecentInvoices() {
     const data = await res.json();
     if (!Array.isArray(data)||!data.length) return;
     const tbody = document.getElementById('rec-table');
+    if (!tbody) return;
     tbody.innerHTML = '';
-    data.forEach(r => {
+    // Fusionner les données Sheets avec les BL ajoutés localement
+    const tousBLs = [...data];
+    facturesRecues.forEach(f => {
+      if (!tousBLs.find(r => r.numero === f.numero)) {
+        tousBLs.unshift({ numero: f.numero, fournisseur: f.fournisseur, date: f.date, nom: '' });
+      }
+    });
+    tousBLs.forEach(r => {
       const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
       addFactureRecue(r.numero, r.fournisseur||'—', r.date);
-
-      // Vérifier si ce BL est déjà lié à une facture Odoo
       const corresp = getFacturePourBL(r.numero);
       const safeNum = (r.numero||'').replace(/[^a-zA-Z0-9]/g, '_');
       const safeBl  = (r.numero||'').replace(/'/g, "\\'");
@@ -4872,7 +4878,6 @@ async function loadRecentInvoices() {
       const facCell = corresp
         ? facCellLiee(corresp.facture, safeBl, safeNum)
         : facCellNonLiee(safeNum, safeBl, safeFo);
-
       tbody.innerHTML += `<tr data-bl="${r.numero}">
         <td class="sub-text">${d}</td>
         <td><b>${r.fournisseur||'—'}</b></td>
