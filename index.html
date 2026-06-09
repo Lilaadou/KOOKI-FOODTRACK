@@ -5531,16 +5531,27 @@ function applyProduction(data) {
 
 // ── Premix ──
 function applyPremix(data) {
-  // Toujours utiliser les données de Google Sheets si disponibles
   const apiData = Array.isArray(data) && data.length ? data : null;
   const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
-  let source = apiData || local;
-  // Mettre à jour le localStorage avec les données Sheets
-  if (apiData) localStorage.setItem('kooki_premix', JSON.stringify(apiData));
+  
+  let source;
+  if (apiData) {
+    // Fusionner en préservant les manquantsResolus du localStorage
+    source = apiData.map(r => {
+      const localEntry = local.find(l => l.codePremix === r.codePremix);
+      return {
+        ...r,
+        manquantsResolus: r.manquantsResolus || localEntry?.manquantsResolus || false
+      };
+    });
+    localStorage.setItem('kooki_premix', JSON.stringify(source));
+  } else {
+    source = local;
+  }
+
   source = [...source].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   const tbody = document.getElementById('pmx-table');
   if (!tbody) return;
-
   if (!source.length) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun premix enregistré.</td></tr>';
   } else {
@@ -5548,7 +5559,6 @@ function applyPremix(data) {
     source.forEach(r => {
       const facs = (r.factures || []).map(f => `<span class="tag tag-o">${f}</span>`).join(' ') || '—';
       const savSac = r.saveur ? `<b>${r.saveur}</b> · Bac ${r.sac||'?'}` : '—';
-      // Déterminer statut depuis inventaire
       const inv = getInventairePremix();
       const sacData = r.saveur && r.sac ? inv[r.saveur]?.[r.sac] : null;
       const statut = sacData?.statut === 'dispo' ? 'Disponible' : sacData?.statut === 'vide' ? 'Utilisé' : 'Enregistré';
@@ -5570,7 +5580,6 @@ function applyPremix(data) {
       }
     });
   }
-  // Reconstruire l'inventaire
   updateInventairePremix();
 }
 
