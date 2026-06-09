@@ -4061,10 +4061,20 @@ function deletePremix(codePremix) {
 // 4. Mettre à jour l'inventaire visuellement
   updateInventairePremix();
 
-  // 5. Supprimer dans Google Sheets
-  fetch(API, { method: 'POST', body: JSON.stringify({
+// 5. Supprimer dans Google Sheets
+  fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({
     action: 'supprimerPremix', codePremix
   })}).catch(() => {});
+
+  // 6. Mettre à jour l'inventaire dans Google Sheets
+  if (entry?.saveur && entry?.sac) {
+    fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({
+      action: 'majInventaire', saveur: entry.saveur, sac: entry.sac, statut: 'vide', codePremix: ''
+    })}).catch(() => {});
+  }
+
+  // 7. Recharger le menu déroulant Production
+  loadPremixDispo();
 
 toast('pmx', `✓ Premix ${codePremix} supprimé`, 'ok');
 
