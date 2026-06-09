@@ -4869,17 +4869,13 @@ async function loadRecentInvoices() {
     if (!Array.isArray(data)||!data.length) return;
     const tbody = document.getElementById('rec-table');
     if (!tbody) return;
-    tbody.innerHTML = '';
-    // Fusionner les données Sheets avec les BL ajoutés localement
-    const tousBLs = [...data];
-    facturesRecues.forEach(f => {
-      if (!tousBLs.find(r => r.numero === f.numero)) {
-        tousBLs.unshift({ numero: f.numero, fournisseur: f.fournisseur, date: f.date, nom: '' });
-      }
-    });
-    tousBLs.forEach(r => {
+    
+    // Ajouter dans facturesRecues
+    data.forEach(r => addFactureRecue(r.numero, r.fournisseur||'—', r.date));
+    
+    // Construire le tableau en une seule fois
+    tbody.innerHTML = data.map(r => {
       const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
-      addFactureRecue(r.numero, r.fournisseur||'—', r.date);
       const corresp = getFacturePourBL(r.numero);
       const safeNum = (r.numero||'').replace(/[^a-zA-Z0-9]/g, '_');
       const safeBl  = (r.numero||'').replace(/'/g, "\\'");
@@ -4887,14 +4883,14 @@ async function loadRecentInvoices() {
       const facCell = corresp
         ? facCellLiee(corresp.facture, safeBl, safeNum)
         : facCellNonLiee(safeNum, safeBl, safeFo);
-      tbody.innerHTML += `<tr data-bl="${r.numero}">
+      return `<tr data-bl="${r.numero}">
         <td class="sub-text">${d}</td>
         <td><b>${r.fournisseur||'—'}</b></td>
         <td><span class="bl-tag">${r.numero}</span></td>
         <td id="fac-cell-${safeNum}">${facCell}</td>
         <td>${r.nom||'—'}</td>
       </tr>`;
-    });
+    }).join('');
   } catch {}
 }
 
