@@ -2324,8 +2324,9 @@ function calcBoites() {
   const type = document.getElementById('sortie-type')?.value || '';
   const showPlastic = type === 'b2b' || ((type === 'evenement' || type === 'interne') && document.getElementById('boites-opt-toggle')?.checked);
   let totalBigBoxes = 0, totalSmallBoxes = 0, totalCookies = 0;
+  let totalBig = 0, totalSmall = 0;
 
-  // Parcourir tous les blocs multi-saveurs
+  // Parcourir tous les blocs multi-saveurs — accumuler d'abord les totaux
   document.querySelectorAll('[id^="saveur-block-"]').forEach(block => {
     const bId = block.id.replace('saveur-block-', '');
     const saveur = document.getElementById('saveur-sel-' + bId)?.value;
@@ -2335,19 +2336,16 @@ function calcBoites() {
       const small = parseInt(document.getElementById(`b${bId}-small-${l.code}`)?.value) || 0;
       if (!big && !small) return;
       totalCookies += big + small;
-      if (showPlastic) {
-        const bBig   = big   > 0 ? Math.ceil(big   / 14) : 0;
-        const bSmall = small > 0 ? Math.ceil(small / 25) : 0;
-        totalBigBoxes   += bBig;
-        totalSmallBoxes += bSmall;
-        const boxEl = document.getElementById(`b${bId}-boxes-${l.code}`);
-        if (boxEl) {
-          boxEl.textContent = bSmall || bBig;
-          boxEl.parentElement.style.background = (bSmall || bBig) > 0 ? '#e0edf8' : '#f0f6fc';
-        }
-      }
+      totalBig     += big;
+      totalSmall   += small;
     });
   });
+
+  // Calculer les boîtes sur le TOTAL (pas lot par lot)
+  if (showPlastic) {
+    totalBigBoxes   = totalBig   > 0 ? Math.ceil(totalBig   / 14) : 0;
+    totalSmallBoxes = totalSmall > 0 ? Math.ceil(totalSmall / 25) : 0;
+  }
 
   // Résumé B2B
   const elB2B = document.getElementById('boites-total-display');
