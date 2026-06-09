@@ -1247,22 +1247,11 @@
     <div style="font-size:16px;font-weight:700;margin-bottom:6px">✓ Marquer comme résolu</div>
     <div style="font-size:12px;color:#888;margin-bottom:18px">Si tu as reçu une livraison pour cet ingrédient, ajoute le BL ci-dessous.</div>
     <input type="hidden" id="resoudre-code-premix">
-    <div class="form-group" style="margin-bottom:12px">
-      <label>N° BL (optionnel)</label>
-      <input type="text" id="resoudre-bl" placeholder="Ex: FW26001234">
-    </div>
     <div class="form-group" style="margin-bottom:18px">
-      <label>Fournisseur (optionnel)</label>
-      <select id="resoudre-fournisseur">
-        <option value="">-- Sélectionner --</option>
-        <option>Foodflow</option>
-        <option>Bruyerre</option>
-        <option>Colruyt</option>
-        <option>Hygiena</option>
-        <option>Makady</option>
-        <option>De Notten Shop</option>
-        <option>Autre</option>
-      </select>
+      <label>Bon de livraison (optionnel)</label>
+      <div class="fac-list" id="resoudre-bl-list">
+        <div class="fac-empty">Aucun BL disponible</div>
+      </div>
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-primary" onclick="confirmerResoudre()" style="flex:1">✓ Confirmer</button>
@@ -3895,17 +3884,29 @@ function updateManquantsSummary() {
 }
 
 function resoudrePremix(codePremix) {
-  // Ouvrir la modale
   document.getElementById('resoudre-code-premix').value = codePremix;
-  document.getElementById('resoudre-bl').value = '';
-  document.getElementById('resoudre-fournisseur').selectedIndex = 0;
+  const list = document.getElementById('resoudre-bl-list');
+  const uneSemaine = new Date();
+  uneSemaine.setDate(uneSemaine.getDate() - 7);
+  const blsSemaine = facturesRecues.filter(f => f.date && new Date(f.date) >= uneSemaine);
+  if (!blsSemaine.length) {
+    list.innerHTML = '<div class="fac-empty">Aucun BL cette semaine — réceptionnez-en dans l\'onglet Réception facture</div>';
+  } else {
+    list.innerHTML = blsSemaine.map(f => `
+      <label class="fac-check">
+        <input type="checkbox" value="${f.numero}">
+        <span><b>${f.numero}</b> — ${f.fournisseur}</span>
+        <span class="fac-tag">${f.date ? new Date(f.date).toLocaleDateString('fr-FR') : ''}</span>
+      </label>`).join('');
+  }
   document.getElementById('resoudre-overlay').style.display = 'flex';
 }
 
 async function confirmerResoudre() {
   const codePremix = document.getElementById('resoudre-code-premix').value;
-  const bl = document.getElementById('resoudre-bl').value.trim();
-  const fournisseur = document.getElementById('resoudre-fournisseur').value;
+  const bls = [...document.querySelectorAll('#resoudre-bl-list input:checked')].map(c => c.value);
+  const bl = bls.join(', ');
+  const fournisseur = '';
 
   // Fermer la modale
   document.getElementById('resoudre-overlay').style.display = 'none';
