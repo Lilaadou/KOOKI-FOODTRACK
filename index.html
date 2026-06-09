@@ -916,7 +916,12 @@
           <label>Producteur</label>
           <input type="text" id="prod-nom" readonly style="background:#f0f0f0;color:#888;cursor:default;border-color:#e8e8e8;">
         </div>
-        <div class="form-group"><label>Code Premix *</label><input type="text" id="prod-pmx" placeholder="Ex: PMX-260606-05"></div>
+       <div class="form-group">
+  <label>Code Premix *</label>
+  <select id="prod-pmx" onchange="autoFillFromPremix()">
+    <option value="">-- Choisir un premix --</option>
+  </select>
+</div>
         <div class="form-group"><label>Code Lot *</label><input type="text" id="prod-code" placeholder="Ex: SUZ-260606-01"></div>
         <div class="form-group"><label>Saveur *</label>
           <select id="prod-saveur">
@@ -4086,6 +4091,49 @@ toast('pmx', `✓ Premix ${codePremix} supprimé`, 'ok');
   } catch {}
   updateInventairePremix();
   updateManquantsSummary();
+}
+
+  function loadPremixDispo() {
+  const inv = getInventairePremix();
+  const premixs = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
+  const select = document.getElementById('prod-pmx');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Choisir un premix --</option>';
+  ALL_SAVEURS_PMX.forEach(sav => {
+    ['1','2'].forEach(num => {
+      const sac = inv[sav]?.[num];
+      if (sac?.statut === 'dispo' && sac.codePremix && sac.codePremix !== '—') {
+        const option = document.createElement('option');
+        option.value = sac.codePremix;
+        option.textContent = `${sac.codePremix} — ${sav} Bac ${num}`;
+        option.dataset.saveur = sav;
+        option.dataset.manquants = JSON.stringify(premixs.find(p => p.codePremix === sac.codePremix)?.manquants || []);
+        option.dataset.manquantsResolus = premixs.find(p => p.codePremix === sac.codePremix)?.manquantsResolus || false;
+        select.appendChild(option);
+      }
+    });
+  });
+}
+
+function autoFillFromPremix() {
+  const select = document.getElementById('prod-pmx');
+  const option = select.options[select.selectedIndex];
+  if (!option.value) return;
+  const saveurEl = document.getElementById('prod-saveur');
+  if (saveurEl && option.dataset.saveur) {
+    saveurEl.value = option.dataset.saveur;
+  }
+  const manquants = JSON.parse(option.dataset.manquants || '[]');
+  const resolus = option.dataset.manquantsResolus === 'true';
+  const warn = document.getElementById('prod-pmx-warning');
+  if (manquants.length > 0 && !resolus) {
+    if (warn) {
+      warn.style.display = '';
+      warn.innerHTML = `⚠️ Ce premix a des ingrédients manquants : <b>${manquants.join(', ')}</b>. Veux-tu quand même l'utiliser ?`;
+    }
+  } else {
+    if (warn) warn.style.display = 'none';
+  }
 }
   
 function addAlerteManquant(codePremix, manquants, producteur) {
