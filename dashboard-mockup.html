@@ -5425,8 +5425,9 @@ function applyProduction(data) {
 
 // ── Premix ──
 function applyPremix(data) {
-  const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
-  const source = local.length ? local : (Array.isArray(data) ? data : []);
+ const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
+  let source = local.length ? local : (Array.isArray(data) ? data : []);
+  source = [...source].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   const tbody = document.getElementById('pmx-table');
   if (!tbody) return;
 
