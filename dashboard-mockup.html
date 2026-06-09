@@ -1133,11 +1133,9 @@
 
       <!-- Saveurs multiples -->
       <div style="margin-bottom:13px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <label style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em">Saveurs & lots à sortir *</label>
-          <button onclick="addSaveurBlock()" style="display:flex;align-items:center;gap:5px;background:#fbe8e2;color:#d44218;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Ajouter une saveur</button>
-        </div>
+        <label style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:10px">Saveurs & lots à sortir *</label>
         <div id="saveurs-blocks"></div>
+        <button onclick="addSaveurBlock()" style="display:flex;align-items:center;gap:5px;background:#fbe8e2;color:#d44218;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px">+ Ajouter une saveur</button>
       </div>
 
       <div class="form-footer">
@@ -2338,7 +2336,7 @@ function calcBoites() {
       if (!big && !small) return;
       totalCookies += big + small;
       if (showPlastic) {
-        const bBig   = big   > 0 ? Math.ceil(big   / 12) : 0;
+        const bBig   = big   > 0 ? Math.ceil(big   / 14) : 0;
         const bSmall = small > 0 ? Math.ceil(small / 25) : 0;
         totalBigBoxes   += bBig;
         totalSmallBoxes += bSmall;
