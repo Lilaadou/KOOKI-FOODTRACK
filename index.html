@@ -5348,19 +5348,22 @@ function applyStock(data) {
 // ── Factures reçues ──
 function applyRecentInvoices(data) {
   if (!Array.isArray(data) || !data.length) return;
+  // Ajouter dans facturesRecues pour la modale et les listes BL
+  data.forEach(r => {
+    addFactureRecue(r.numero, r.fournisseur || '—', r.date);
+  });
+  // Mettre à jour le tableau uniquement si l'onglet est ouvert
   const tbody = document.getElementById('rec-table');
-  if (tbody) tbody.innerHTML = '';
+  if (!tbody) return;
+  tbody.innerHTML = '';
   data.forEach(r => {
     const d = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '—';
-    addFactureRecue(r.numero, r.fournisseur || '—', r.date);
-    if (tbody) {
-      tbody.innerHTML += `<tr>
-        <td>${d}</td>
-        <td><b>${r.fournisseur || '—'}</b></td>
-        <td><span class="tag tag-o">${r.numero}</span></td>
-        <td>${r.nom || '—'}</td>
-      </tr>`;
-    }
+    tbody.innerHTML += `<tr>
+      <td>${d}</td>
+      <td><b>${r.fournisseur || '—'}</b></td>
+      <td><span class="tag tag-o">${r.numero}</span></td>
+      <td>${r.nom || '—'}</td>
+    </tr>`;
   });
 }
 
