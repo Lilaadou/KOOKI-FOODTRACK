@@ -4047,7 +4047,8 @@ function deletePremix(codePremix) {
     action: 'supprimerPremix', codePremix
   })}).catch(() => {});
 
-  toast('pmx', `✓ Premix ${codePremix} supprimé`, 'ok');
+toast('pmx', `✓ Premix ${codePremix} supprimé`, 'ok');
+}
 
 function addAlerteManquant(codePremix, manquants, producteur) {
   const alertPage = document.querySelector('#page-alertes .card');
@@ -5429,8 +5430,12 @@ function applyProduction(data) {
 
 // ── Premix ──
 function applyPremix(data) {
- const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
-  let source = local.length ? local : (Array.isArray(data) ? data : []);
+  // Toujours utiliser les données de Google Sheets si disponibles
+  const apiData = Array.isArray(data) && data.length ? data : null;
+  const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
+  let source = apiData || local;
+  // Mettre à jour le localStorage avec les données Sheets
+  if (apiData) localStorage.setItem('kooki_premix', JSON.stringify(apiData));
   source = [...source].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   const tbody = document.getElementById('pmx-table');
   if (!tbody) return;
