@@ -1664,7 +1664,7 @@
 </main>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxdcXtAIyezE6hkAlCIhYUSXC-yByyDmdLuM5MwtWO-6vqoeXd6xersj41i534ZtfL9Uw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxI56XHgMtfflQXKr28zrgmZiy4AF1YD6SpsJG21Y5HmNUngw8z5jpxkPxqkbs_zjZH/exec';
 
 // ─────────────────────────────────────
 // PROFILS & ACCÈS AUX ONGLETS
@@ -2325,9 +2325,8 @@ function calcBoites() {
   const type = document.getElementById('sortie-type')?.value || '';
   const showPlastic = type === 'b2b' || ((type === 'evenement' || type === 'interne') && document.getElementById('boites-opt-toggle')?.checked);
   let totalBigBoxes = 0, totalSmallBoxes = 0, totalCookies = 0;
-  let totalBig = 0, totalSmall = 0;
 
-  // Parcourir tous les blocs multi-saveurs — accumuler d'abord les totaux
+  // Parcourir tous les blocs multi-saveurs
   document.querySelectorAll('[id^="saveur-block-"]').forEach(block => {
     const bId = block.id.replace('saveur-block-', '');
     const saveur = document.getElementById('saveur-sel-' + bId)?.value;
@@ -2337,16 +2336,19 @@ function calcBoites() {
       const small = parseInt(document.getElementById(`b${bId}-small-${l.code}`)?.value) || 0;
       if (!big && !small) return;
       totalCookies += big + small;
-      totalBig     += big;
-      totalSmall   += small;
+      if (showPlastic) {
+        const bBig   = big   > 0 ? Math.ceil(big   / 14) : 0;
+        const bSmall = small > 0 ? Math.ceil(small / 25) : 0;
+        totalBigBoxes   += bBig;
+        totalSmallBoxes += bSmall;
+        const boxEl = document.getElementById(`b${bId}-boxes-${l.code}`);
+        if (boxEl) {
+          boxEl.textContent = bSmall || bBig;
+          boxEl.parentElement.style.background = (bSmall || bBig) > 0 ? '#e0edf8' : '#f0f6fc';
+        }
+      }
     });
   });
-
-  // Calculer les boîtes sur le TOTAL (pas lot par lot)
-  if (showPlastic) {
-    totalBigBoxes   = totalBig   > 0 ? Math.ceil(totalBig   / 14) : 0;
-    totalSmallBoxes = totalSmall > 0 ? Math.ceil(totalSmall / 25) : 0;
-  }
 
   // Résumé B2B
   const elB2B = document.getElementById('boites-total-display');
@@ -2495,7 +2497,7 @@ function toggleDestination() {
   // Reset option boîtes
   const tog = document.getElementById('boites-opt-toggle');
   if (tog) { tog.checked = false; document.getElementById('boites-opt-detail').style.display = 'none'; }
-  // Recalculer si magasin
+  // Recalculer si Ixelles
   if (type === 'magasin' || type === 'anderlecht') calcBoites();
 }
 
@@ -2695,7 +2697,7 @@ async function saveSortie() {
   const allSaveur = saveursLots.map(sv => sv.saveur).join(', ');
 
   try {
-    const res  = await fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'sortie', saveur: allSaveur, destination, lots: allLots }) });
+    const res  = await fetch(API, { method:'POST', body: JSON.stringify({ action:'sortie', saveur: allSaveur, destination, lots: allLots }) });
     const json = await res.json();
 
     if (json.success) {
@@ -2765,7 +2767,7 @@ async function saveSortie() {
       updateStockPage();
       updateDashboardStockTable();
       toast('sortie','✓ Sortie enregistrée !','ok');
-      // Bon de livraison uniquement pour B2B, événement et usage interne (pas pour les magasins)
+      // Bon de livraison avec tous les lots
       if (type !== 'magasin' && type !== 'anderlecht') {
         showBonLivraison({ client: destination, saveur: allSaveur, lots: allLots, boites, typeBoite, livreur });
       }
@@ -3129,7 +3131,7 @@ async function saveStockCorrections() {
 
   // Envoi API
   try {
-    fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({ action: 'corrigerStock', corrections }) })
+    fetch(API, { method: 'POST', body: JSON.stringify({ action: 'corrigerStock', corrections }) })
       .then(r => r.json())
       .then(json => {
         toast('ing', json?.success ? '✓ Stock corrigé !' : '✓ Corrigé localement', 'ok');
@@ -3211,7 +3213,6 @@ async function saveLivraisonIngredients() {
   try {
     fetch(API, {
       method: 'POST',
-      redirect: 'follow',
       body: JSON.stringify({ action: 'livraisonIngredients', bl, fournisseur, livraison })
     })
     .then(r => r.json())
@@ -3277,7 +3278,7 @@ async function deduireIngredientsProduction(codePremix) {
   const sacNom = entry.saveur + ' ' + entry.sac;
 
   try {
-    const res  = await fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({ action: 'deduireIngredients', sacNom }) });
+    const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'deduireIngredients', sacNom }) });
     const json = await res.json();
     if (json?.success) {
       if (json.stockMisAJour) {
@@ -3961,7 +3962,6 @@ function savePremix() {
   try {
     fetch(API, {
       method: 'POST',
-      redirect: 'follow',
       body: JSON.stringify({
         action: 'premix',
         codePremix: code,
@@ -4079,7 +4079,7 @@ async function saveProduction() {
   const factures = getCheckedFactures('prod-fac-list');
   if (!factures.length) { toast('prod','⚠️ Cochez au moins 1 BL','err'); return; }
   try {
-    const res = await fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'production', nom, pmx, code, saveur, big, small, factures }) });
+    const res = await fetch(API, { method:'POST', body: JSON.stringify({ action:'production', nom, pmx, code, saveur, big, small, factures }) });
     const json = await res.json();
     if (json.success) {
       toast('prod','✓ Production enregistrée !','ok');
@@ -4147,7 +4147,7 @@ async function saveReception() {
   }
 
   try {
-    const res  = await fetch(API, { method: 'POST', redirect: 'follow', body: JSON.stringify({ action: 'reception', fournisseur, numero, nom, date, factureOdoo }) });
+    const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'reception', fournisseur, numero, nom, date, factureOdoo }) });
     const json = await res.json();
     if (json.success) {
       toast('rec', factureOdoo ? '✓ BL réceptionné + facture liée automatiquement !' : '✓ BL réceptionné !', 'ok');
@@ -4248,7 +4248,6 @@ async function saveCorrespondance(bl, fac, fournisseur, fromInline) {
   try {
     fetch(API, {
       method: 'POST',
-      redirect: 'follow',
       body: JSON.stringify({ action: 'correspondance', bl: blVal, facture: facVal, fournisseur: fourn })
     })
     .then(r => r.json())
@@ -5115,13 +5114,6 @@ async function loadAllData() {
     applyManquants(manquantsData);
 
     setLoading('Prêt !', 100);
-
-    // Charger le stock ingrédients (source de vérité = Google Sheets)
-    await loadIngredients();
-
-    // Reconstruire le récapitulatif factures maintenant que productions + premix sont chargés
-    await loadCorrespondances(); // charge les correspondances BL→facture puis appelle buildFacturesRecap
-
     setTimeout(() => {
       document.getElementById('loading-overlay').style.display = 'none';
       drawChart('semaine');
@@ -5204,11 +5196,9 @@ function annulerSortie(sortieId) {
   if (!confirm('Annuler cette sortie et retourner les cookies dans le stock ?')) return;
 
   const sorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
-  let sortie = sorties.find(s => String(s.id) === String(sortieId));
-  // Fallback : chercher par index si pas trouvé par id
-  if (!sortie && !isNaN(sortieId) && sorties[sortieId]) sortie = sorties[sortieId];
+  const sortie  = sorties.find(s => String(s.id) === String(sortieId));
 
-  if (!sortie) { alert('Sortie introuvable. Rechargez la page et réessayez.'); return; }
+  if (!sortie) { alert('Sortie introuvable dans le stock local.'); return; }
   if (sortie.annule) { alert('Cette sortie est déjà annulée.'); return; }
 
   // Retourner les cookies dans stockLocal
@@ -5245,22 +5235,8 @@ function annulerSortie(sortieId) {
 }
 
 function applySorties(data) {
-  const local   = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
-  const apiData = Array.isArray(data) ? data : [];
-
-  // Google Sheets = source de vérité
-  // Garder les entrées locales récentes pas encore dans l'API (ajoutées dans les dernières minutes)
-  const makeKey = r => (r.date||'') + '|' + (r.destination||'') + '|' + (r.saveur||'') + '|' + (r.big||0) + '|' + (r.small||0);
-  const apiKeys   = new Set(apiData.map(makeKey));
-  const localOnly = local.filter(r => !apiKeys.has(makeKey(r)));
-  const merged = apiData.length
-    ? [...apiData, ...localOnly]
-    : local; // fallback hors-ligne
-
-  // Assigner un id stable à chaque sortie
-  merged.forEach((r, i) => { if (!r.id) r.id = 'sortie_' + i + '_' + (r.date||'').replace(/\D/g,'').slice(0,10); });
-  if (merged.length) localStorage.setItem('kooki_sorties', JSON.stringify(merged));
-  const source = merged;
+  const local = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  const source = local.length ? local : (Array.isArray(data) ? data : []);
   const tbody = document.getElementById('sortie-history');
   if (!tbody) return;
 
@@ -5393,7 +5369,7 @@ function supprimerLivraison(idx) {
 
 function applyProduction(data) {
   // Normaliser les données venant de Google Sheets
-  // Format attendu depuis l'onglet "Production" (ligne 2+) :
+  // Format attendu depuis l'onglet "Production" (ligne 72+) :
   // { saveur, codePremix, code (ou codeLot), big (ou bigSize), small (ou babySize), nom (ou producteur), date }
   const normalise = r => ({
     code:    r.code      || r.codeLot      || r.lot        || '—',
@@ -5403,22 +5379,16 @@ function applyProduction(data) {
     small:   parseInt(r.small || r.babySize  || r.qtySmall || 0),
     nom:     r.nom       || r.producteur    || r.producer   || '—',
     date:    r.date      || null,
-    bls:     Array.isArray(r.bls) ? r.bls : (r.factures ? (Array.isArray(r.factures) ? r.factures : String(r.factures).split(',').map(s=>s.trim()).filter(Boolean)) : []),
   });
 
-  const apiData  = Array.isArray(data) ? data.map(normalise).filter(r => r.code !== '—') : [];
+  const apiData  = Array.isArray(data) ? data.map(normalise) : [];
   const local    = JSON.parse(localStorage.getItem('kooki_productions') || '[]');
   const deletedCodes = new Set(JSON.parse(localStorage.getItem('kooki_productions_deleted') || '[]'));
-
-  // Google Sheets = source de vérité. L'API a priorité.
-  // On garde en plus les entrées locales pas encore dans l'API (ajoutées à l'instant sur cet appareil)
-  const apiCodes = new Set(apiData.map(r => r.code));
-  const localOnly = local.filter(r => !apiCodes.has(r.code) && !deletedCodes.has(r.code));
-  const merged = apiData.length
-    ? [...apiData.filter(r => !deletedCodes.has(r.code)), ...localOnly]
-    : local.filter(r => !deletedCodes.has(r.code)); // fallback hors-ligne
-
-  localStorage.setItem('kooki_productions', JSON.stringify(merged));
+  // Fusionner : localStorage en premier, puis les entrées API qui n'y sont pas déjà
+  // Les codes supprimés sont exclus des deux sources
+  const localFiltered = local.filter(r => !deletedCodes.has(r.code));
+  const localCodes = new Set(localFiltered.map(r => r.code));
+  const merged = [...localFiltered, ...apiData.filter(r => r.code !== '—' && !localCodes.has(r.code) && !deletedCodes.has(r.code))];
 
   const tbody = document.getElementById('prod-table');
   if (!tbody) return;
@@ -5455,16 +5425,8 @@ function applyProduction(data) {
 
 // ── Premix ──
 function applyPremix(data) {
-  const local   = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
-  const apiData = Array.isArray(data) ? data.filter(r => r.codePremix) : [];
-  // Google Sheets = source de vérité
-  const apiCodes  = new Set(apiData.map(r => r.codePremix));
-  const localOnly = local.filter(r => !apiCodes.has(r.codePremix));
-  const merged = apiData.length
-    ? [...apiData, ...localOnly]
-    : local; // fallback hors-ligne
-  if (merged.length) localStorage.setItem('kooki_premix', JSON.stringify(merged));
-  const source = merged;
+  const local = JSON.parse(localStorage.getItem('kooki_premix') || '[]');
+  const source = local.length ? local : (Array.isArray(data) ? data : []);
   const tbody = document.getElementById('pmx-table');
   if (!tbody) return;
 
