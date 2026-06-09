@@ -5116,6 +5116,9 @@ async function loadAllData() {
 
     setLoading('Prêt !', 100);
 
+    // Charger le stock ingrédients (source de vérité = Google Sheets)
+    await loadIngredients();
+
     // Reconstruire le récapitulatif factures maintenant que productions + premix sont chargés
     await loadCorrespondances(); // charge les correspondances BL→facture puis appelle buildFacturesRecap
 
