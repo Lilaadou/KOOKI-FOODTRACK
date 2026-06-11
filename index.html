@@ -599,6 +599,7 @@
   <button class="nav-item" id="nav-reception" onclick="showPage('reception',this)"><span class="nav-icon">📥</span> Réception facture</button>
   <button class="nav-item" id="nav-factures" onclick="showPage('factures',this)"><span class="nav-icon">🧾</span> Factures</button>
   <button class="nav-item" id="nav-historique" onclick="showPage('historique',this)"><span class="nav-icon">📅</span> Historique</button>
+<button class="nav-item" id="nav-taches" onclick="showPage('taches',this)"><span class="nav-icon">✅</span> Tâches</button>
 
   <div class="sidebar-bottom">
     <button class="nav-item" id="nav-alertes" onclick="showPage('alertes',this)">
@@ -1673,7 +1674,71 @@
       <div id="recap-bl-container"></div>
     </div>
   </div>
+<!-- ══════════════════ TÂCHES ══════════════════ -->
+<div id="page-taches" class="page">
 
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+    <!-- Colonne gauche -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Tâches du jour -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">📋 Tâches du jour</div><div class="card-sub" id="taches-date-label">—</div></div>
+          <button class="btn btn-secondary" onclick="loadTaches()" style="font-size:11px;padding:5px 12px">🔄 Actualiser</button>
+        </div>
+        <div id="taches-jour-list"><div class="empty">Chargement…</div></div>
+      </div>
+
+      <!-- Ajouter une tâche (admins seulement) -->
+      <div class="card" id="taches-form-card" style="display:none">
+        <div class="card-header"><div><div class="card-title">➕ Ajouter une tâche</div></div></div>
+        <div class="form-group">
+          <label>Titre *</label>
+          <input type="text" id="tache-titre" placeholder="Ex: Préparer bacs SUZZY">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label>Assignée à *</label>
+            <select id="tache-assignee">
+              <option value="Tout le monde">Tout le monde</option>
+              <option value="Équipe Production">Équipe Production</option>
+              <option value="Équipe Vente">Équipe Vente</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priorité</label>
+            <select id="tache-priorite">
+              <option value="Urgent">🔴 Urgent</option>
+              <option value="Normal">🟡 Normal</option>
+              <option value="Faible">🟢 Faible</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Note (optionnel)</label>
+          <textarea id="tache-note" rows="2" placeholder="Détails supplémentaires…" style="padding:8px 11px;border:1.5px solid #e8e8e8;border-radius:9px;font-size:13px;outline:none;resize:none;width:100%"></textarea>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" onclick="ajouterTache()">➕ Ajouter</button>
+          <span class="toast" id="toast-tache"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Colonne droite : Vue semaine -->
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">📅 Vue de la semaine</div><div class="card-sub" id="taches-semaine-label">—</div></div>
+      </div>
+      <div id="taches-semaine-list"><div class="empty">Chargement…</div></div>
+    </div>
+
+  </div>
+</div>
+  
   <!-- ══════════════════ HISTORIQUE ══════════════════ -->
   <div id="page-historique" class="page">
     <div class="card">
@@ -1717,13 +1782,13 @@
 </main>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxGqSXb2rLN_HNK-ZF-qPA_us4zOO_qXolu-E0rDHRmj-MSR6DVmVaI3EhKBKswvjB2qw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyAY42NbVVzBmR_zHqj3Zb4iBqaW6CLJKnYlmeHoqbSmMteDTGgiOjCtUPlZETG21_FkQ/exec';
 // ─────────────────────────────────────
 // PROFILS & ACCÈS AUX ONGLETS
 // ─────────────────────────────────────
-const ALL_PAGES   = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','reception','factures','historique','alertes','parametres'];
-const PROD_PAGES  = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','historique','alertes','parametres'];
-const FRIGO_PAGES = ['dashboard','frigo','ixelles'];
+const ALL_PAGES   = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','reception','factures','historique','alertes','parametres','taches'];
+const PROD_PAGES  = ['dashboard','premix','production','stock','ingredients','frigo','ixelles','historique','alertes','parametres','taches'];
+const FRIGO_PAGES = ['dashboard','frigo','ixelles','taches'];
 
 const PROFILES = {
   // ── Accès complet ──
@@ -1741,7 +1806,7 @@ const PROFILES = {
   Delia:     { color:'#9b59b6', initial:'DR', role:'Équipe vente',   pages: FRIGO_PAGES },
 };
 
-const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', ixelles:'Commandes Magasin Ixelles', ingredients:'Stock Ingrédients', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres' };
+const titles  = { dashboard:'Dashboard', premix:'Premix', production:'Production', stock:'Stock', frigo:'Frigo / Sorties', ixelles:'Commandes Magasin Ixelles', ingredients:'Stock Ingrédients', reception:'Réception de facture', factures:'Factures', historique:'Historique', alertes:'Alertes', parametres:'Paramètres', taches:'Tâches' };
 
 const FULL_NAMES = {
   Lila:'Lila Doudou', Virginia:'Virginia Kunnen', Abenazer:'Abenazer Hailu',
@@ -1815,6 +1880,7 @@ function showPage(name, btn) {
   if (name === 'production') setTimeout(() => { loadPremixDispo(); buildProdByProducer(); buildProdLegend(); drawProdChart(); initProdChartEvents(); updateLotsduJour(); updateCalendrierProduction(); }, 60);
   if (name === 'ixelles')     setTimeout(() => { initCommandeIxelles(); }, 60);
   if (name === 'ingredients') setTimeout(() => { initIngredientsPage(); }, 60);
+if (name === 'taches') setTimeout(() => { loadTaches(); }, 60);
   if (name === 'premix') setTimeout(async () => {
   const data = await fetchAPI('getPremix');
   applyPremix(data);
@@ -4309,6 +4375,205 @@ function renderLiensBL() {
           </tr>`).join('')}
       </tbody>
     </table>`;
+}
+
+  // ─────────────────────────────────────
+// TÂCHES
+// ─────────────────────────────────────
+let tachesData = [];
+
+async function loadTaches() {
+  try {
+    const data = await fetchAPI('getTaches');
+    if (Array.isArray(data)) tachesData = data;
+  } catch {}
+  renderTachesJour();
+  renderTachesSemaine();
+}
+
+function renderTachesJour() {
+  const container = document.getElementById('taches-jour-list');
+  const dateLabel = document.getElementById('taches-date-label');
+  const formCard  = document.getElementById('taches-form-card');
+  if (!container) return;
+
+  const today = new Date();
+  const todayStr = today.toDateString();
+  if (dateLabel) dateLabel.textContent = today.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  if (formCard) formCard.style.display = canPrepareOrder() ? '' : 'none';
+
+  const todayTaches = tachesData.filter(t => {
+    const d = new Date(t.date);
+    return d.toDateString() === todayStr || t.statut === 'En cours';
+  });
+
+  if (!todayTaches.length) {
+    container.innerHTML = '<div class="empty">Aucune tâche pour aujourd\'hui 🎉</div>';
+    return;
+  }
+
+  const urgent   = todayTaches.filter(t => t.priorite === 'Urgent'  && t.statut !== 'Terminee');
+  const normal   = todayTaches.filter(t => t.priorite === 'Normal'  && t.statut !== 'Terminee');
+  const faible   = todayTaches.filter(t => t.priorite === 'Faible'  && t.statut !== 'Terminee');
+  const terminees = todayTaches.filter(t => t.statut === 'Terminee');
+
+  const tacheHTML = (t) => {
+    const assigneeBadge = t.assignee === 'Équipe Production' 
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#e0edf8;color:#0662aa">Équipe Production</span>'
+      : t.assignee === 'Équipe Vente'
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#f0f0f0;color:#888">Équipe Vente</span>'
+      : '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#fbe8e2;color:#d44218">Tout le monde</span>';
+    const done = t.statut === 'Terminee';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;${done?'opacity:.6':''}">
+      <div onclick="toggleTache('${t.titre.replace(/'/g,"\\'")}','${t.date}')"
+        style="width:18px;height:18px;border-radius:5px;border:2px solid ${done?'#27ae60':'#d44218'};flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:${done?'#27ae60':'transparent'}">
+        ${done ? '<span style="color:white;font-size:11px;font-weight:700">✓</span>' : ''}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;${done?'text-decoration:line-through;color:#aaa':''}">${t.titre}</div>
+        ${t.note ? `<div style="font-size:11px;color:#888;margin-top:2px">${t.note}</div>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+          ${assigneeBadge}
+          <span style="font-size:11px;color:#aaa">· Par ${t.creePar}</span>
+          ${done ? `<span style="font-size:11px;color:#27ae60">· ✓ ${t.cocheePar}</span>` : ''}
+        </div>
+      </div>
+      ${canPrepareOrder() ? `<button onclick="supprimerTache('${t.titre.replace(/'/g,"\\'")}','${t.date}')"
+        style="background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px"
+        onmouseover="this.style.color='#d44218';this.style.background='#fbe8e2'"
+        onmouseout="this.style.color='#ccc';this.style.background='none'"
+        title="Supprimer">🗑️</button>` : ''}
+    </div>`;
+  };
+
+  let html = '';
+  if (urgent.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:#d44218;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">🔴 Urgent</div>';
+    html += urgent.map(tacheHTML).join('');
+  }
+  if (normal.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:#a07800;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">🟡 Normal</div>';
+    html += normal.map(tacheHTML).join('');
+  }
+  if (faible.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">🟢 Faible</div>';
+    html += faible.map(tacheHTML).join('');
+  }
+  if (terminees.length) {
+    html += '<div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">✅ Terminées</div>';
+    html += terminees.map(tacheHTML).join('');
+  }
+
+  container.innerHTML = html || '<div class="empty">Aucune tâche pour aujourd\'hui 🎉</div>';
+}
+
+function renderTachesSemaine() {
+  const container = document.getElementById('taches-semaine-list');
+  const label = document.getElementById('taches-semaine-label');
+  if (!container) return;
+
+  const now = new Date();
+  const day = now.getDay() === 0 ? 7 : now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - day + 1);
+  monday.setHours(0,0,0,0);
+
+  if (label) {
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    label.textContent = 'Semaine du ' + monday.toLocaleDateString('fr-FR', { day:'numeric', month:'long' }) + ' au ' + sunday.toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+  }
+
+  const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  let html = '';
+
+  for (let i = 0; i < 7; i++) {
+    const jour = new Date(monday);
+    jour.setDate(monday.getDate() + i);
+    const jourStr = jour.toDateString();
+    const isToday = jourStr === now.toDateString();
+    const isPast  = jour < now && !isToday;
+
+    const tachesJour = tachesData.filter(t => {
+      const d = new Date(t.date);
+      return d.toDateString() === jourStr;
+    });
+
+    const total    = tachesJour.length;
+    const terminees = tachesJour.filter(t => t.statut === 'Terminee').length;
+    const badge = total === 0
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#f0f0f0;color:#aaa">—</span>'
+      : total === terminees
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#e8f8f0;color:#27ae60">${terminees}/${total} ✓</span>`
+      : terminees > 0
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#fef7d6;color:#a07800">${terminees}/${total}</span>`
+      : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#fbe8e2;color:#d44218">${terminees}/${total}</span>`;
+
+    html += `<div style="padding:10px 0;border-bottom:1px solid #f5f5f5">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:700;color:${isToday?'#d44218':isPast?'#aaa':'#1a1a2e'}">${isToday?'📍 ':''} ${JOURS[i]} ${jour.toLocaleDateString('fr-FR', { day:'numeric', month:'short' })}</span>
+        ${badge}
+      </div>`;
+
+    if (!tachesJour.length) {
+      html += `<div style="font-size:12px;color:#ccc;padding:2px 0">Aucune tâche</div>`;
+    } else {
+      tachesJour.forEach(t => {
+        const done = t.statut === 'Terminee';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;${done?'opacity:.5':''}">
+          <div style="width:14px;height:14px;border-radius:4px;border:2px solid ${done?'#27ae60':'#d44218'};flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${done?'#27ae60':'transparent'}">
+            ${done ? '<span style="color:white;font-size:9px;font-weight:700">✓</span>' : ''}
+          </div>
+          <span style="font-size:12px;${done?'text-decoration:line-through;color:#aaa':''}">${t.titre}</span>
+          <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;background:${t.priorite==='Urgent'?'#fbe8e2':t.priorite==='Normal'?'#fef7d6':'#e8f8f0'};color:${t.priorite==='Urgent'?'#d44218':t.priorite==='Normal'?'#a07800':'#27ae60'}">${t.priorite}</span>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+async function ajouterTache() {
+  const titre    = document.getElementById('tache-titre').value.trim();
+  const assignee = document.getElementById('tache-assignee').value;
+  const priorite = document.getElementById('tache-priorite').value;
+  const note     = document.getElementById('tache-note').value.trim();
+  if (!titre) { toast('tache', '⚠️ Le titre est requis', 'err'); return; }
+
+  const creePar = FULL_NAMES[currentProfile] || currentProfile;
+  try {
+    const res  = await fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'sauverTache', titre, assignee, priorite, note, creePar }) });
+    const json = await res.json();
+    if (json.success) {
+      toast('tache', '✓ Tâche ajoutée !', 'ok');
+      document.getElementById('tache-titre').value = '';
+      document.getElementById('tache-note').value = '';
+      tachesData.unshift({ date: new Date().toISOString(), titre, assignee, priorite, note, creePar, statut: 'En cours', cocheePar: '', dateCoche: '' });
+      renderTachesJour();
+      renderTachesSemaine();
+    }
+  } catch { toast('tache', '❌ Erreur', 'err'); }
+}
+
+async function toggleTache(titre, date) {
+  const tache = tachesData.find(t => t.titre === titre && t.date === date);
+  if (!tache) return;
+  const newStatut = tache.statut === 'Terminee' ? 'En cours' : 'Terminee';
+  const cocheePar = FULL_NAMES[currentProfile] || currentProfile;
+  tache.statut    = newStatut;
+  tache.cocheePar = newStatut === 'Terminee' ? cocheePar : '';
+  renderTachesJour();
+  renderTachesSemaine();
+  fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'cocherTache', titre, date, statut: newStatut, cocheePar }) }).catch(() => {});
+}
+
+async function supprimerTache(titre, date) {
+  if (!confirm('Supprimer cette tâche ?')) return;
+  tachesData = tachesData.filter(t => !(t.titre === titre && t.date === date));
+  renderTachesJour();
+  renderTachesSemaine();
 }
   
 function addAlerteManquant(codePremix, manquants, producteur) {
