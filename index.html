@@ -2779,6 +2779,7 @@ async function saveSortie() {
       });
       localStorage.setItem('kooki_sorties', JSON.stringify(storedSorties));
       localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
+      applySorties([]);
 
       // Boîtes plastiques B2B
       if (type === 'b2b' && boites > 0) {
