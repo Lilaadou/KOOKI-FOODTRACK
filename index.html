@@ -5421,56 +5421,101 @@ function annulerSortie(sortieId) {
 }
 
 function applySorties(data) {
-  const local = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
-  const source = local.length ? local : (Array.isArray(data) ? data : []);
   const tbody = document.getElementById('sortie-history');
   if (!tbody) return;
 
+  // Charger depuis Google Sheets si disponible, sinon localStorage
+  const local = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  const source = Array.isArray(data) && data.length ? data : local;
+
   if (!source.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty">Aucune sortie enregistrée.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="2" class="empty">Aucune sortie enregistrée.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = source.map((r, idx) => {
-    const d = r.date ? new Date(r.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
-    const isBlue = r.saveur && r.saveur.includes('WOODY');
-    const rowId  = r.id || idx;
-    if (r.annule) {
-      return `<tr style="opacity:.45;text-decoration:line-through" data-sortie-id="${rowId}">
-        <td class="sub-text">${d}</td>
-        <td><span class="tag ${'tag-o'}">${r.saveur || '—'}</span></td>
-        <td>${r.destination || '—'}</td>
-        <td>${r.lot || '—'}</td>
-        <td>${r.big || 0}</td><td>${r.small || 0}</td>
-        <td>${r.boites || '—'}</td>
-        <td class="sub-text">${r.producteur || '—'}</td>
-        <td><span style="font-size:11px;color:#aaa;font-weight:600">Annulée</span></td>
-      </tr>`;
+  // Regrouper par idGroupe
+  const groupes = {};
+  source.forEach(r => {
+    const key = r.idGroupe || (r.date + '_' + r.destination + '_' + r.producteur);
+    if (!groupes[key]) {
+      groupes[key] = {
+        date: r.date,
+        destination: r.destination,
+        producteur: r.producteur,
+        boites: r.boites || 0,
+        lots: [],
+        idGroupe: key
+      };
     }
-    return `<tr data-sortie-id="${rowId}">
-      <td class="sub-text">${d}</td>
-      <td><span class="tag ${'tag-o'}">${r.saveur || '—'}</span></td>
-      <td><b>${r.destination || '—'}</b></td>
-      <td>${r.lot || '—'}</td>
-      <td>${r.big || 0}</td>
-      <td>${r.small || 0}</td>
-      <td>${r.boites || '—'}</td>
-      <td class="sub-text">${r.producteur || '—'}</td>
-      <td><button onclick="annulerSortie(${JSON.stringify(rowId)})"
-        style="background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:3px 7px;border-radius:6px;white-space:nowrap;transition:all .15s"
-        onmouseover="this.style.background='#fbe8e2';this.style.color='#d44218'"
-        onmouseout="this.style.background='none';this.style.color='#ccc'"
-        title="Annuler cette sortie et retourner au stock">↩️ Annuler</button></td>
-    </tr>`;
+    groupes[key].lots.push({
+      saveur: r.saveur,
+      lot: r.lot,
+      big: r.big || 0,
+      small: r.small || 0
+    });
+  });
+
+  // Déterminer le type de destination
+  const getDestType = (dest) => {
+    if (['Magasin Ixelles', 'Magasin Anderlecht'].includes(dest)) return { icon:'🏪', badge:'Magasin', color:'#fbe8e2', textColor:'#d44218' };
+    const b2b = ['Ecocyclo','Galler Ixelles','Galler Woluwe','La Fourmilière','Penta Hotel','Café Club','Flippers','Slide Coffee','Kooki Anderlecht','Petit Mercado'];
+    if (b2b.includes(dest)) return { icon:'🤝', badge:'B2B', color:'#e8f8f0', textColor:'#1a8a4a' };
+    return { icon:'📦', badge:'Autre', color:'#f0f0f0', textColor:'#888' };
+  };
+
+  // Construire le HTML
+  tbody.innerHTML = Object.values(groupes).map(g => {
+    const d = g.date ? new Date(g.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+    const type = getDestType(g.destination);
+    const totalBig = g.lots.reduce((s, l) => s + l.big, 0);
+    const totalSmall = g.lots.reduce((s, l) => s + l.small, 0);
+
+    const lignes = g.lots.map(l => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5">
+        <div>
+          <span class="tag tag-o">${l.saveur}</span>
+          <div style="font-size:11px;color:#888;margin-top:2px">${l.lot}</div>
+        </div>
+        <div style="display:flex;gap:12px;font-size:12px;font-weight:700">
+          <span style="color:#d44218">${l.big} Big</span>
+          <span style="color:#0662aa">${l.small} Small</span>
+        </div>
+      </div>`).join('');
+
+    return `
+      <tr>
+        <td colspan="2" style="padding:0;padding-bottom:12px">
+          <div style="border:1px solid #f0f0f0;border-radius:12px;overflow:hidden">
+            <!-- En-tête -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7f8fa;border-bottom:1px solid #f0f0f0">
+              <div>
+                <div style="font-size:13px;font-weight:700">${type.icon} ${g.destination}</div>
+                <div style="font-size:11px;color:#888;margin-top:2px">${d} · Livré par ${g.producteur || '—'}</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${type.color};color:${type.textColor}">${type.badge}</span>
+                <button onclick="annulerSortieGroupe('${g.idGroupe}')"
+                  style="background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:3px 7px;border-radius:6px;transition:all .15s"
+                  onmouseover="this.style.background='#fbe8e2';this.style.color='#d44218'"
+                  onmouseout="this.style.background='none';this.style.color='#ccc'"
+                  title="Annuler cette sortie">↩️</button>
+              </div>
+            </div>
+            <!-- Lignes saveurs -->
+            <div style="padding:4px 16px">${lignes}</div>
+            <!-- Total -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#fdf0ec;border-top:1px solid #f5cbb8">
+              <span style="font-size:11px;font-weight:700;color:#d44218">Total${g.boites > 0 ? ' · ' + g.boites + ' boîte(s)' : ''}</span>
+              <div style="display:flex;gap:12px;font-size:12px;font-weight:700">
+                <span style="color:#d44218">${totalBig} Big</span>
+                <span style="color:#0662aa">${totalSmall} Small</span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
   }).join('');
-
-  // Stat : sorties aujourd'hui
-  const today = new Date().toDateString();
-  const countToday = source.filter(r => r.date && new Date(r.date).toDateString() === today && !r.annule).length;
-  const el = document.getElementById('frigo-count-day');
-  if (el) el.textContent = countToday;
 }
-
 // ── Production historique ──
 
 // ─────────────────────────────────────
