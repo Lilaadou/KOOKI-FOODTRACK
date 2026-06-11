@@ -1804,7 +1804,7 @@ function showPage(name, btn) {
   document.getElementById('page-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = titles[name] || name;
-  if (name === 'reception') { loadRecentInvoices(); renderPdfList(); }
+  if (name === 'reception') { loadRecentInvoices(); renderPdfList(); loadBLSelect(); renderLiensBL(); }
   if (name === 'frigo') setTimeout(() => { renderRecapB2b(currentRecapOffset); }, 60);
   if (name === 'factures') setTimeout(() => { loadCorrespondances(); }, 60);
   if (name === 'premix' || name === 'production') refreshFactureLists();
@@ -4251,6 +4251,61 @@ function autoFillFromPremix() {
   } else {
     if (warn) warn.style.display = 'none';
   }
+}
+function loadBLSelect() {
+  const select = document.getElementById('lier-bl-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Choisir un BL --</option>';
+  facturesRecues.forEach(f => {
+    const corresp = getFacturePourBL(f.numero);
+    if (!corresp) {
+      const option = document.createElement('option');
+      option.value = f.numero;
+      option.textContent = `${f.numero} — ${f.fournisseur || '—'}`;
+      select.appendChild(option);
+    }
+  });
+}
+
+function lierBLFactureOdoo() {
+  const bl = document.getElementById('lier-bl-select').value;
+  const facture = document.getElementById('lier-facture-input').value.trim();
+  if (!bl) { toast('lier', '⚠️ Choisissez un BL', 'err'); return; }
+  if (!facture) { toast('lier', '⚠️ Entrez un numéro de facture', 'err'); return; }
+  const fournisseur = facturesRecues.find(f => f.numero === bl)?.fournisseur || '';
+  saveCorrespondance(bl, facture, fournisseur, true);
+  toast('lier', `✓ ${bl} lié à ${facture} !`, 'ok');
+  document.getElementById('lier-bl-select').value = '';
+  document.getElementById('lier-facture-input').value = '';
+  renderLiensBL();
+  loadBLSelect();
+}
+
+function renderLiensBL() {
+  const container = document.getElementById('liens-bl-liste');
+  if (!container) return;
+  if (!correspondances.length) {
+    container.innerHTML = '<div class="empty" style="padding:12px">Aucun lien enregistré.</div>';
+    return;
+  }
+  container.innerHTML = `
+    <table>
+      <thead><tr><th>N° BL</th><th>Fournisseur</th><th>N° Facture Odoo</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+        ${correspondances.map(c => `
+          <tr>
+            <td><span class="bl-tag">${c.bl}</span></td>
+            <td>${c.fournisseur || '—'}</td>
+            <td><b style="color:#27ae60">✓ ${c.facture}</b></td>
+            <td class="sub-text">${c.date ? new Date(c.date).toLocaleDateString('fr-FR') : '—'}</td>
+            <td><button onclick="deleteCorrespondance('${c.bl.replace(/'/g,"\\'")}') "
+              style="background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;padding:2px 6px;border-radius:6px"
+              onmouseover="this.style.color='#d44218';this.style.background='#fbe8e2'"
+              onmouseout="this.style.color='#ccc';this.style.background='none'"
+              title="Supprimer ce lien">🗑️</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
   
 function addAlerteManquant(codePremix, manquants, producteur) {
