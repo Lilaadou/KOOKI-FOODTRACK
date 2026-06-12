@@ -1187,7 +1187,7 @@
         <div class="card-header"><div><div class="card-title">↩️ Enregistrer un retour</div><div class="card-sub">Boîtes rendues par un client</div></div></div>
         <div class="form-group" style="margin-bottom:11px">
           <label>Client B2B</label>
-          <select id="retour-client">
+          <select id="retour-client" onchange="updateRetourMax()">
             <option value="">-- Sélectionner --</option>
             <option>Ecocyclo</option>
             <option>Galler Ixelles</option>
@@ -1937,7 +1937,7 @@ function showPage(name, btn) {
   loadRecentInvoices().then(() => { loadBLSelect(); renderLiensBL(); }); 
   renderPdfList(); 
 }
-  if (name === 'frigo') setTimeout(() => { renderRecapB2b(currentRecapOffset); }, 60);
+  if (name === 'frigo') setTimeout(() => { renderRecapB2b(currentRecapOffset); loadBoites(); }, 60);
   if (name === 'factures') setTimeout(() => { loadCorrespondances(); }, 60);
   if (name === 'premix' || name === 'production') refreshFactureLists();
   if (name === 'dashboard') setTimeout(() => { drawChart(currentChartMode); updateDashboardIxellesBanner(); updateDashboardBacsVides(); updateDashboardMiniCal(); }, 60);
@@ -2709,42 +2709,104 @@ function showRetourBoites() {
   document.getElementById('retour-boites-card').scrollIntoView({ behavior:'smooth' });
 }
 
-function saveRetourBoites() {
+async function saveRetourBoites() {
   const client = document.getElementById('retour-client').value;
   const nb     = parseInt(document.getElementById('retour-nb').value) || 0;
   if (!client || !nb) { toast('retour','⚠️ Client et nombre requis','err'); return; }
 
-  // Mettre à jour le tableau boîtes
-  const rows = document.querySelectorAll('#boites-table tr');
-  let found  = false;
-  rows.forEach(row => {
-    const name = row.cells[0]?.textContent.trim();
-    if (name === client) {
-      const retournees = parseInt(row.cells[2].textContent) + nb;
-      const envoyees   = parseInt(row.cells[1].textContent);
-      const solde      = envoyees - retournees;
-      row.cells[2].textContent = retournees;
-      row.cells[3].textContent = solde;
-      row.cells[3].style.color = solde > 0 ? '#d44218' : '#0662aa';
-      row.cells[3].style.fontWeight = '700';
-      row.cells[4].innerHTML = solde > 0
-        ? `<span class="status s-warn">${solde} manquantes</span>`
-        : `<span class="status s-ok">À jour</span>`;
-      found = true;
-    }
-  });
-
-  if (!found) {
-    // Nouveau client dans le tableau
-    const tbody = document.getElementById('boites-table');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${client}</b></td><td>0</td><td>${nb}</td><td style="color:#0662aa;font-weight:700">0</td><td><span class="status s-ok">À jour</span></td>`;
-    tbody.appendChild(tr);
+  // Vérifier le solde maximum
+  const soldeActuel = getBoitesSolde(client);
+  if (nb > soldeActuel) { 
+    toast('retour', `⚠️ Maximum ${soldeActuel} boîte(s) pour ${client}`, 'err'); 
+    return; 
   }
 
+  // Sauvegarder dans Google Sheets
+  const par = FULL_NAMES[currentProfile] || currentProfile;
+  try {
+    await fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({
+      action: 'sauverBoite', client, action: 'Retour', quantite: nb, par
+    })});
+  } catch {}
+
+  // Mettre à jour localStorage
+  const boites = JSON.parse(localStorage.getItem('kooki_boites') || '[]');
+  boites.unshift({ date: new Date().toISOString(), client, action: 'Retour', quantite: nb, par });
+  localStorage.setItem('kooki_boites', JSON.stringify(boites));
+
+  renderBoitesTable();
   toast('retour', `✓ ${nb} boîte(s) retournée(s) par ${client}`, 'ok');
   document.getElementById('retour-client').selectedIndex = 0;
   document.getElementById('retour-nb').value = '';
+}
+
+function getBoitesSolde(client) {
+  const boites = JSON.parse(localStorage.getItem('kooki_boites') || '[]');
+  let envoyees = 0, retournees = 0;
+  boites.forEach(b => {
+    if (b.client !== client) return;
+    if (b.action === 'Envoi')   envoyees   += Number(b.quantite) || 0;
+    if (b.action === 'Retour')  retournees += Number(b.quantite) || 0;
+  });
+  return Math.max(0, envoyees - retournees);
+}
+
+function renderBoitesTable() {
+  const tbody = document.getElementById('boites-table');
+  if (!tbody) return;
+
+  const boites = JSON.parse(localStorage.getItem('kooki_boites') || '[]');
+  const B2B_LIST = ['Ecocyclo','Galler Ixelles','Galler Woluwe','La Fourmilière','Penta Hotel','Café Club','Flippers','Slide Coffee','Kooki Anderlecht','Petit Mercado','La Belladone'];
+
+  tbody.innerHTML = B2B_LIST.map(client => {
+    let envoyees = 0, retournees = 0;
+    boites.forEach(b => {
+      if (b.client !== client) return;
+      if (b.action === 'Envoi')  envoyees   += Number(b.quantite) || 0;
+      if (b.action === 'Retour') retournees += Number(b.quantite) || 0;
+    });
+    const solde = envoyees - retournees;
+    const info = B2B_CLIENTS[client] || {};
+    return `<tr>
+      <td><b>${client}</b><div class="sub-text">${info.contact || ''} · ${info.tel || ''}</div></td>
+      <td>${envoyees}</td>
+      <td>${retournees}</td>
+      <td style="color:${solde > 0 ? '#d44218' : '#0662aa'};font-weight:700">${solde}</td>
+      <td><span class="status ${solde > 0 ? 's-warn' : 's-ok'}">${solde > 0 ? solde + ' manquantes' : 'À jour'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Mettre à jour le max du champ retour
+  updateRetourMax();
+}
+
+function updateRetourMax() {
+  const client = document.getElementById('retour-client')?.value;
+  const input  = document.getElementById('retour-nb');
+  if (!input) return;
+  if (client) {
+    const solde = getBoitesSolde(client);
+    input.max = solde;
+    input.placeholder = solde > 0 ? `Max ${solde}` : 'Aucune boîte due';
+    input.disabled = solde === 0;
+  } else {
+    input.max = '';
+    input.placeholder = 'Ex: 6';
+    input.disabled = false;
+  }
+}
+
+async function loadBoites() {
+  try {
+    const data = await fetchAPI('getBoites');
+    if (Array.isArray(data) && data.length) {
+      const boites = data.map(r => ({
+        date: r.date, client: r.client, action: r.action, quantite: r.quantite, par: r.par
+      }));
+      localStorage.setItem('kooki_boites', JSON.stringify(boites));
+    }
+  } catch {}
+  renderBoitesTable();
 }
 
 function printBon() {
@@ -2945,26 +3007,14 @@ async function saveSortie() {
 
       // Boîtes plastiques B2B
       if (type === 'b2b' && boites > 0) {
-        const rows = document.querySelectorAll('#boites-table tr');
-        let found  = false;
-        rows.forEach(row => {
-          if (row.cells[0]?.textContent.trim() === b2bClient) {
-            const env = parseInt(row.cells[1].textContent) + boites;
-            const ret = parseInt(row.cells[2].textContent);
-            const sol = env - ret;
-            row.cells[1].textContent = env;
-            row.cells[3].textContent = sol;
-            row.cells[3].style.color = sol > 0 ? '#d44218' : '#0662aa';
-            row.cells[3].style.fontWeight = '700';
-            row.cells[4].innerHTML = sol > 0 ? `<span class="status s-warn">${sol} manquantes</span>` : `<span class="status s-ok">À jour</span>`;
-            found = true;
-          }
-        });
-        if (!found) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td><b>${b2bClient}</b></td><td>${boites}</td><td>0</td><td style="color:#d44218;font-weight:700">${boites}</td><td><span class="status s-warn">${boites} manquantes</span></td>`;
-          document.getElementById('boites-table').prepend(tr);
-        }
+        const par = FULL_NAMES[currentProfile] || currentProfile;
+        fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({
+          action: 'sauverBoite', client: b2bClient, action: 'Envoi', quantite: boites, par
+        })}).catch(() => {});
+        const boitesData = JSON.parse(localStorage.getItem('kooki_boites') || '[]');
+        boitesData.unshift({ date: new Date().toISOString(), client: b2bClient, action: 'Envoi', quantite: boites, par });
+        localStorage.setItem('kooki_boites', JSON.stringify(boitesData));
+        renderBoitesTable();
       }
 
       updateStockPage();
