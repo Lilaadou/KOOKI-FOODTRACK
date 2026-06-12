@@ -5746,7 +5746,34 @@ function applyRecentInvoices(data) {
 }
 
 // ── Sorties frigo ──
+function annulerSortieGroupe(idGroupe) {
+  if (!confirm('Annuler cette sortie et retourner les cookies dans le stock ?')) return;
 
+  const sorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
+  const groupe  = sorties.filter(s => (s.idGroupe || (s.date + '_' + s.destination + '_' + s.producteur)) === idGroupe);
+
+  if (!groupe.length) { alert('Sortie introuvable.'); return; }
+
+  groupe.forEach(s => {
+    const existing = stockLocal.find(l => l.code === s.lot);
+    if (existing) {
+      existing.big   += Number(s.big)   || 0;
+      existing.small += Number(s.small) || 0;
+    } else if (s.lot && s.lot !== '—') {
+      stockLocal.push({ code: s.lot, saveur: s.saveur, big: Number(s.big)||0, small: Number(s.small)||0 });
+    }
+    s.annule = true;
+  });
+
+  localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
+  localStorage.setItem('kooki_sorties', JSON.stringify(sorties));
+
+  updateStockPage();
+  updateDashboardStockTable();
+  applySorties([]);
+  toast('sortie', '✓ Sortie annulée — stock restauré !', 'ok');
+}
+  
 function annulerSortie(sortieId) {
   if (!confirm('Annuler cette sortie et retourner les cookies dans le stock ?')) return;
 
