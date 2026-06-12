@@ -2757,10 +2757,10 @@ function showBonLivraison({ client, saveur, lots, boites, typeBoite='plastique',
   }
 
   document.getElementById('bon-lots-body').innerHTML = lots.map(l => {
-    const isBlue = saveur && saveur.includes('WOODY');
+    const saveurLot = l.saveur || saveur;
     return '<tr>'
       + '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;font-weight:600">' + l.code + '</td>'
-      + '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5"><span class="tag ' + ('tag-o') + '">' + saveur + '</span></td>'
+      + '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5"><span class="tag ' + ('tag-o') + '">' + saveurLot + '</span></td>'
       + (showBig   ? '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#d44218">' + (l.big||0)   + '</td>' : '')
       + (showSmall ? '<td style="padding:8px 10px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:700;color:#0662aa">' + (l.small||0) + '</td>' : '')
       + '</tr>';
