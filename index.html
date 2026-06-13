@@ -1801,6 +1801,48 @@
 
   </div>
 </div>
+
+  <!-- ══════════════════ BONS DE LIVRAISON ══════════════════ -->
+<div id="page-bl" class="page">
+
+  <!-- Stats -->
+  <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+    <div class="stat-card"><div class="stat-top"><div class="stat-label">BL ce mois-ci</div><div class="stat-icon ic-b">📦</div></div><div class="stat-value" id="bl-stat-count">0</div><span class="stat-badge badge-ok" id="bl-stat-mois">—</span></div>
+    <div class="stat-card"><div class="stat-top"><div class="stat-label">Clients livrés</div><div class="stat-icon ic-o">🤝</div></div><div class="stat-value" id="bl-stat-clients">0</div><span class="stat-badge badge-ok">Cette semaine</span></div>
+    <div class="stat-card"><div class="stat-top"><div class="stat-label">Big livrés</div><div class="stat-icon ic-o">🍪</div></div><div class="stat-value" id="bl-stat-big" style="color:#d44218">0</div><span class="stat-badge badge-ok">Ce mois-ci</span></div>
+    <div class="stat-card"><div class="stat-top"><div class="stat-label">Small livrés</div><div class="stat-icon ic-b">🍪</div></div><div class="stat-value" id="bl-stat-small" style="color:#0662aa">0</div><span class="stat-badge badge-ok">Ce mois-ci</span></div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">📦 Bons de livraison B2B</div><div class="card-sub">Historique complet des livraisons</div></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="search-wrap">
+          <div class="search-bar">
+            <span style="color:#bbb">🔍</span>
+            <input type="text" id="bl-search" placeholder="Client, N° BL, lot…" oninput="filterBL(this.value)">
+          </div>
+        </div>
+        <button class="btn btn-secondary" onclick="loadBL()" style="font-size:11px;padding:5px 12px">🔄 Actualiser</button>
+      </div>
+    </div>
+
+    <div id="bl-table-container">
+      <div class="empty">Chargement…</div>
+    </div>
+
+    <!-- Total filtré -->
+    <div id="bl-total-bar" style="display:none;background:#1a1a2e;border-radius:10px;padding:10px 16px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span id="bl-total-label" style="font-size:12px;font-weight:700;color:#fff"></span>
+      <div style="display:flex;gap:10px">
+        <span id="bl-total-big" style="background:#d44218;color:#fff;border-radius:8px;padding:3px 12px;font-size:12px;font-weight:700"></span>
+        <span id="bl-total-small" style="background:#0662aa;color:#fff;border-radius:8px;padding:3px 12px;font-size:12px;font-weight:700"></span>
+        <span id="bl-total-boites" style="background:#444;color:#fff;border-radius:8px;padding:3px 12px;font-size:12px;font-weight:700"></span>
+      </div>
+    </div>
+  </div>
+</div>
   
   <!-- ══════════════════ HISTORIQUE ══════════════════ -->
   <div id="page-historique" class="page">
@@ -4824,6 +4866,129 @@ async function supprimerTache(titre, date) {
   tachesData = tachesData.filter(t => !(t.titre === titre && t.date === date));
   renderTachesJour();
   renderTachesSemaine();
+}
+
+  // ─────────────────────────────────────
+// BONS DE LIVRAISON
+// ─────────────────────────────────────
+let blData = [];
+
+async function loadBL() {
+  try {
+    const data = await fetchAPI('getBL');
+    if (Array.isArray(data)) blData = data;
+  } catch {}
+  renderBLTable(blData);
+  updateBLStats(blData);
+}
+
+function updateBLStats(data) {
+  const now = new Date();
+  const mois = now.getMonth();
+  const annee = now.getFullYear();
+  const semaine = new Date(now);
+  semaine.setDate(now.getDate() - 7);
+
+  const duMois = data.filter(bl => {
+    const d = new Date(bl.date);
+    return d.getMonth() === mois && d.getFullYear() === annee;
+  });
+
+  const clientsSemaine = new Set(data.filter(bl => new Date(bl.date) >= semaine).map(bl => bl.client));
+  const totalBig   = duMois.reduce((s, bl) => s + bl.lots.reduce((a, l) => a + l.big, 0), 0);
+  const totalSmall = duMois.reduce((s, bl) => s + bl.lots.reduce((a, l) => a + l.small, 0), 0);
+
+  const moisLabel = now.toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+  document.getElementById('bl-stat-count').textContent  = duMois.length;
+  document.getElementById('bl-stat-mois').textContent   = moisLabel;
+  document.getElementById('bl-stat-clients').textContent = clientsSemaine.size;
+  document.getElementById('bl-stat-big').textContent    = totalBig;
+  document.getElementById('bl-stat-small').textContent  = totalSmall;
+}
+
+function renderBLTable(data) {
+  const container = document.getElementById('bl-table-container');
+  if (!container) return;
+
+  if (!data.length) {
+    container.innerHTML = '<div class="empty">Aucun bon de livraison enregistré.</div>';
+    document.getElementById('bl-total-bar').style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>N° BL</th>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Lots livrés</th>
+          <th>Big</th>
+          <th>Small</th>
+          <th>Boîtes</th>
+          <th>Sorti par</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(bl => {
+          const d = bl.date ? new Date(bl.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+          const totalBig   = bl.lots.reduce((s, l) => s + l.big, 0);
+          const totalSmall = bl.lots.reduce((s, l) => s + l.small, 0);
+          const lotsHTML = bl.lots.map(l => `
+            <span class="tag tag-o" style="font-size:10px">${l.saveur}</span>
+            <span style="font-size:10px;color:#888">${l.lot}</span><br>`).join('');
+          return `<tr>
+            <td><span class="bl-tag">${bl.numeroBL}</span></td>
+            <td class="sub-text">${d}</td>
+            <td><b>${bl.client}</b></td>
+            <td style="line-height:1.8">${lotsHTML}</td>
+            <td style="font-weight:700;color:#d44218">${totalBig}</td>
+            <td style="font-weight:700;color:#0662aa">${totalSmall}</td>
+            <td>${bl.boites || 0}</td>
+            <td class="sub-text">${bl.sortiPar || '—'}</td>
+            <td><button onclick="reimprimerBL('${bl.numeroBL}')"
+              style="background:#d44218;color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">🖨️</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+
+  // Mettre à jour le total
+  const totalBig   = data.reduce((s, bl) => s + bl.lots.reduce((a, l) => a + l.big, 0), 0);
+  const totalSmall = data.reduce((s, bl) => s + bl.lots.reduce((a, l) => a + l.small, 0), 0);
+  const totalBoites = data.reduce((s, bl) => s + (bl.boites || 0), 0);
+  const totalBar = document.getElementById('bl-total-bar');
+  totalBar.style.display = 'flex';
+  document.getElementById('bl-total-label').textContent = `Total — ${data.length} livraison${data.length > 1 ? 's' : ''}`;
+  document.getElementById('bl-total-big').textContent   = `Big : ${totalBig}`;
+  document.getElementById('bl-total-small').textContent = `Small : ${totalSmall}`;
+  document.getElementById('bl-total-boites').textContent = `Boîtes : ${totalBoites}`;
+}
+
+function filterBL(q) {
+  if (!q) { renderBLTable(blData); return; }
+  const qLow = q.toLowerCase();
+  const filtered = blData.filter(bl =>
+    bl.client.toLowerCase().includes(qLow) ||
+    bl.numeroBL.toLowerCase().includes(qLow) ||
+    bl.lots.some(l => l.lot.toLowerCase().includes(qLow) || l.saveur.toLowerCase().includes(qLow))
+  );
+  renderBLTable(filtered);
+
+  // Mettre à jour le label du total
+  if (filtered.length && q) {
+    document.getElementById('bl-total-label').textContent = `Total — ${filtered.length} livraison${filtered.length > 1 ? 's' : ''} pour "${q}"`;
+  }
+}
+
+async function reimprimerBL(numeroBL) {
+  const bl = blData.find(b => b.numeroBL === numeroBL);
+  if (!bl) return;
+  const livreur = bl.sortiPar || '—';
+  const allLotsAvecSaveur = bl.lots.map(l => ({ code: l.lot, saveur: l.saveur, big: l.big, small: l.small }));
+  showBonLivraison({ client: bl.client, saveur: bl.lots.map(l => l.saveur).join(', '), lots: allLotsAvecSaveur, boites: bl.boites || 0, typeBoite: 'plastique', livreur });
 }
   
 function addAlerteManquant(codePremix, manquants, producteur) {
