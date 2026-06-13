@@ -3004,10 +3004,62 @@ async function saveSortie() {
     const idGroupe = 'SOR-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000);
     const livreur = FULL_NAMES[currentProfile] || currentProfile;
     const allLotsAvecSaveur = saveursLots.flatMap(sv => sv.lots.map(l => ({ ...l, saveur: sv.saveur })));
+    
+    // Générer numéro BL pour les B2B
+    let numeroBL = null;
+    if (type === 'b2b') {
+      try {
+        const blRes = await fetchAPI('getNextBLNumber');
+        numeroBL = blRes || ('BL-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-3));
+      } catch {
+        numeroBL = 'BL-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-3);
+      }
+    }
+
     const res  = await fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'sortie', saveur: allSaveur, destination, lots: allLotsAvecSaveur, boites, livreur, idGroupe }) });
     const json = await res.json();
 
     if (json.success) {
+      // Sauvegarder dans BonsDeLivraison si B2B
+      if (type === 'b2b' && numeroBL) {
+        fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({
+          action: 'sauverBL',
+          numeroBL,
+          client: destination,
+          lots: allLotsAvecSaveur,
+          boites,
+          sortiPar: livreur
+        })}).catch(() => {});
+        blData.unshift({
+          numeroBL,
+          date: new Date().toISOString(),
+          client: destination,
+          lots: allLotsAvecSaveur,
+          boites,
+          sortiPar: livreur
+        });
+      }
+
+      // Sauvegarder dans BonsDeLivraison si B2B
+      if (type === 'b2b' && numeroBL) {
+        fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({
+          action: 'sauverBL',
+          numeroBL,
+          client: destination,
+          lots: allLotsAvecSaveur,
+          boites,
+          sortiPar: livreur
+        })}).catch(() => {});
+        blData.unshift({
+          numeroBL,
+          date: new Date().toISOString(),
+          client: destination,
+          lots: allLotsAvecSaveur,
+          boites,
+          sortiPar: livreur
+        });
+      }
+
       const now     = new Date();
       const time    = now.toLocaleTimeString('fr-FR',{ hour:'2-digit', minute:'2-digit' });
       const date    = now.toLocaleDateString('fr-FR',{ day:'2-digit', month:'2-digit' });
