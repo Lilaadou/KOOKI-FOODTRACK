@@ -4174,8 +4174,11 @@ function validerCommandeIxelles(id) {
 function annulerCommandeIxelles(id) {
   if (!confirm('Annuler cette commande ?')) return;
   const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
-  const idx    = stored.findIndex(c => c.id === id);
-  if (idx !== -1) { stored[idx].statut = 'annule'; localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored)); }
+  const idx = stored.findIndex(c => String(c.id) === String(id));
+  if (idx !== -1) { 
+    stored[idx].statut = 'annule'; 
+    localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored)); 
+  }
   loadCommandesIxelles();
   updateDashboardIxellesBanner();
 }
