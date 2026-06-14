@@ -6449,14 +6449,28 @@ function applyRecentInvoices(data) {
 // ── Sorties frigo ──
 function annulerSortieGroupe(idGroupe) {
   if (!confirm('Annuler cette sortie et retourner les cookies dans le stock ?')) return;
-
   const sorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
   
-  const groupe = sorties.filter(s => {
+  // Chercher par idGroupe ou par clé combinée
+  let groupe = sorties.filter(s => {
     if (s.idGroupe && s.idGroupe === idGroupe) return true;
     const key = s.date + '_' + s.destination + '_' + (s.producteur || '');
     return key === idGroupe;
   });
+
+  // Fallback : chercher par destination uniquement
+  if (!groupe.length) {
+    const parts = idGroupe.split('_');
+    const dest = parts[1];
+    const dateApprox = parts[0];
+    if (dest) {
+      groupe = sorties.filter(s => 
+        s.destination === dest && 
+        !s.annule &&
+        Math.abs(new Date(s.date) - new Date(dateApprox)) < 3600000
+      );
+    }
+  }
 
   if (!groupe.length) { alert('Sortie introuvable.'); return; }
 
@@ -6471,12 +6485,13 @@ function annulerSortieGroupe(idGroupe) {
     s.annule = true;
   });
 
+  const nouvellesSorties = sorties.filter(s => !s.annule);
   localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
-  localStorage.setItem('kooki_sorties', JSON.stringify(sorties));
+  localStorage.setItem('kooki_sorties', JSON.stringify(nouvellesSorties));
   updateStockPage();
   updateDashboardStockTable();
   applySorties([]);
-  toast('sortie', '✓ Sortie annulée — stock restauré !', 'ok');
+  toast('sortie', '✓ Sortie supprimée — stock restauré !', 'ok');
 }
   
 function annulerSortie(sortieId) {
