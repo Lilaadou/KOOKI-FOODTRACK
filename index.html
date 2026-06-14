@@ -4111,6 +4111,32 @@ async function loadCommandesIxelles() {
   pending.forEach(cmd => updateTotalConfirme(cmd.id));
 }
 
+  function validerCommandeIxellesConfirme(id) {
+  const LIMITE_BOITES = 14;
+  const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
+  const cmd = stored.find(c => String(c.id) === String(id));
+  if (!cmd) return;
+  const lignes = cmd.lignes;
+
+  const lignesConfirmees = lignes.map(l => ({
+    saveur: l.saveur,
+    bacs: parseInt(document.getElementById(`confirm-bacs-${id}-${l.saveur}`)?.value) || 0
+  })).filter(l => l.bacs > 0);
+
+  if (!lignesConfirmees.length) { alert('⚠️ Entrez au moins 1 bac confirmé'); return; }
+
+  const totalConfirme = lignesConfirmees.reduce((s, l) => s + l.bacs, 0);
+  if (totalConfirme > LIMITE_BOITES) {
+    alert(`⚠️ Total dépasse la capacité de la voiture (${totalConfirme} > ${LIMITE_BOITES} boîtes) !`);
+    return;
+  }
+
+  cmd.lignes = lignesConfirmees;
+  cmd.totalBacs = totalConfirme;
+  localStorage.setItem('kooki_commandes_ixelles', JSON.stringify(stored));
+  validerCommandeIxelles(id);
+}
+  
 function validerCommandeIxelles(id) {
   const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
   const cmd    = stored.find(c => String(c.id) === String(id));
