@@ -4114,7 +4114,6 @@ async function loadCommandesIxelles() {
   // Mettre à jour les totaux confirmés
   pending.forEach(cmd => updateTotalConfirme(cmd.id));
 }
-
   function validerCommandeIxellesConfirme(id) {
   const LIMITE_BOITES = 14;
   const stored = JSON.parse(localStorage.getItem('kooki_commandes_ixelles') || '[]');
