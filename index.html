@@ -4130,6 +4130,18 @@ function validerCommandeIxelles(id) {
   // 2. Sauvegarder le nouveau stockLocal
   localStorage.setItem('kooki_stock_local', JSON.stringify(stockLocal));
 
+  // Sauvegarder dans Google Sheets
+  const idGroupe = 'IXE-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000);
+  fetch(API, { method:'POST', redirect:'follow', body: JSON.stringify({
+    action: 'sortie',
+    saveur: allLots.map(l => l.saveur).join(', '),
+    destination: 'Magasin Ixelles',
+    lots: allLots.map(l => ({ ...l, saveur: l.saveur })),
+    boites: totalBacs,
+    livreur,
+    idGroupe
+  })}).catch(() => {});
+
   // 3. Enregistrer dans l'historique des sorties
   const storedSorties = JSON.parse(localStorage.getItem('kooki_sorties') || '[]');
   const totalBacs = cmd.totalBacs || cmd.lignes.reduce((s, l) => s + l.bacs, 0);
